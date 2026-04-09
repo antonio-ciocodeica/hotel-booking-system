@@ -1,0 +1,51 @@
+# --- Java / Gradle (Backend & Mobile) ---
+.gradle/
+build/
+out/
+bin/
+.gradletasknamecache
+.java-version
+
+# --- IntelliJ / IDEs ---
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+
+# --- Spring Boot ---
+*.log
+application-local.yml
+application-local.properties
+
+# --- Node / React (Web) ---
+web/node_modules/
+web/build/
+web/dist/
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+
+# --- Mobile (Android) ---
+mobile/.gradle/
+mobile/build/
+mobile/local.properties
+mobile/.navigation/
+mobile/captures/
+*.apk
+*.aar
+*.jks
+
+# --- Docker ---
+.docker/
+
+# --- OS Specific ---
+.DS_Store
+Thumbs.db

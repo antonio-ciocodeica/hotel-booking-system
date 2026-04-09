@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hotel_booking
+    username: postgres
+    password: password                 # trebuie s? fie identic? cu POSTGRES_PASSWORD din docker-compose.yml
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+app:
+  jwt:
+    secret: "cheia-secreta-jwt-minim-32-caractere-schimb-inainte-de-productie"
+    expiration: 86400000
