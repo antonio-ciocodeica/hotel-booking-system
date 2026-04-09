@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/hotel_booking
     username: postgres
-    password: password                 # trebuie s? fie identic? cu POSTGRES_PASSWORD din docker-compose.yml
+    password: password                 # trebuie sa fie identica cu POSTGRES_PASSWORD din docker-compose.yml
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
