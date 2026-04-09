@@ -1,6 +1,6 @@
 # --- Java / Gradle (Backend & Mobile) ---
 .gradle/
-build/
+**build/
 out/
 bin/
 .gradletasknamecache
@@ -32,6 +32,10 @@ web/.env.production.local
 web/npm-debug.log*
 web/yarn-debug.log*
 web/yarn-error.log*
+
+# --- Vite specific ---
+web/dist-ssr/
+web/*.local
 
 # --- Mobile (Android) ---
 mobile/.gradle/
