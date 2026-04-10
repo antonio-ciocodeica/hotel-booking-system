@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     surname VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -9,8 +9,8 @@ CREATE TABLE users (
 );
 
 CREATE TABLE staff (
-    staff_id SERIAL PRIMARY KEY,
-    hotel_id INTEGER NOT NULL REFERENCES hotels(hotel_id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    hotel_id UUID NOT NULL REFERENCES hotels(id),
     username VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     role INTEGER NOT NULL,

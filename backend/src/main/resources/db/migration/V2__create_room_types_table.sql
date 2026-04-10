@@ -1,6 +1,6 @@
 CREATE TABLE room_types (
-    room_type_id SERIAL PRIMARY KEY,
-    hotel_id INTEGER NOT NULL REFERENCES hotels(hotel_id),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    hotel_id UUID NOT NULL REFERENCES hotels(id),
     room_name VARCHAR(100) NOT NULL,
     room_facilities TEXT,
     child_capacity INTEGER,
