@@ -1,0 +1,3 @@
+ALTER TABLE staff RENAME COLUMN username TO email;
+ALTER TABLE staff ADD CONSTRAINT uk_staff_email UNIQUE (email);
+ALTER TABLE staff ALTER COLUMN email SET NOT NULL;

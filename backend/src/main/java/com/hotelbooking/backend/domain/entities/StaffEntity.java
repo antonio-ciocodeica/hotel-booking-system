@@ -1,7 +1,10 @@
 package com.hotelbooking.backend.domain.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +12,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "staff")
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class StaffEntity {
 
     @Id
@@ -20,7 +26,7 @@ public class StaffEntity {
     private HotelEntity hotel;
 
     @Column(nullable = false)
-    private String username;
+    private String email;
 
     @Column(nullable = false)
     private String passwordHash;
