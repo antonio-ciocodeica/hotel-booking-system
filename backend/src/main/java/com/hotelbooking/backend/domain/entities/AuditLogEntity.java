@@ -3,7 +3,6 @@ package com.hotelbooking.backend.domain.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
