@@ -1,24 +1,28 @@
 package com.hotelbooking.backend.config;
 
 
+import com.hotelbooking.backend.domain.entities.StaffEntity;
 import com.hotelbooking.backend.domain.entities.UserEntity;
+import com.hotelbooking.backend.repositories.StaffRepository;
 import com.hotelbooking.backend.repositories.UserRepository;
+import com.hotelbooking.backend.security.AppRole;
 import com.hotelbooking.backend.security.JwtAuthenticationFilter;
 import com.hotelbooking.backend.services.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -29,39 +33,58 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService(UserRepository userRepository) {
+    UserDetailsService userDetailsService(UserRepository userRepository, StaffRepository staffRepository) {
         return username -> {
-            UserEntity user = (UserEntity) userRepository.findByEmail(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            UserEntity user = userRepository.findByEmail(username).orElse(null);
+            if (user != null) {
+                return org.springframework.security.core.userdetails.User.builder()
+                        .username(user.getEmail())
+                        .password(user.getPasswordHash())
+                        .authorities(List.of(new SimpleGrantedAuthority(user.getRole().asAuthority())))
+                        .build();
+            }
+
+            StaffEntity staff = staffRepository.findByEmail(username).orElseThrow(
+                    () -> new UsernameNotFoundException("User not found")
+            );
+
+            AppRole staffRole = mapStaffRole(staff.getRole());
 
             return org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getEmail())
-                    .password(user.getPasswordHash())
-                    .authorities(new java.util.ArrayList<>())
+                    .username(staff.getEmail())
+                    .password(staff.getPasswordHash())
+                    .authorities(List.of(new SimpleGrantedAuthority(staffRole.asAuthority())))
                     .build();
         };
     }
+
+    /**
+     * staff.role meaning in DB:
+     * 1 = receptioner (STAFF)
+     * 2 = administrator (ADMIN)
+     */
+    private static AppRole mapStaffRole(Integer staffRole) {
+        if (staffRole != null && staffRole == 2) {
+            return AppRole.ADMIN;
+        }
+        return AppRole.STAFF;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter
     ) throws Exception {
-//        http
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .sessionManagement(session ->
-//                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                ).addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http
-                .csrf(csrf -> csrf.disable()) // CSRF trebuie să fie obligatoriu dezactivat pentru API-uri stateless
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

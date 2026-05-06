@@ -1,5 +1,6 @@
 package com.hotelbooking.backend.domain.entities;
 
+import com.hotelbooking.backend.security.AppRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +34,10 @@ public class UserEntity {
 
     @Column(nullable = false)
     private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AppRole role;
 
     @Column(nullable = false)
     private String phoneNumber;
