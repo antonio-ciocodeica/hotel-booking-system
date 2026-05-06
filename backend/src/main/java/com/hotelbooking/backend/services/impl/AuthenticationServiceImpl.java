@@ -4,7 +4,6 @@ import com.hotelbooking.backend.domain.entities.UserEntity;
 import com.hotelbooking.backend.repositories.UserRepository;
 import com.hotelbooking.backend.services.AuthenticationService;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,7 +73,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        return userRepository.findByName(userDetails.getUsername())
+        return userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
