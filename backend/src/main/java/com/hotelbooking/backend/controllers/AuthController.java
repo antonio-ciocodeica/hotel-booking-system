@@ -7,6 +7,7 @@ import com.hotelbooking.backend.domain.dto.authentication.RegisterRequest;
 import com.hotelbooking.backend.domain.entities.UserEntity;
 import com.hotelbooking.backend.mappers.UserMapper;
 import com.hotelbooking.backend.repositories.UserRepository;
+import com.hotelbooking.backend.security.AppRole;
 import com.hotelbooking.backend.services.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,7 @@ public class AuthController {
                 .surname(registerRequest.getSurname())
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
+                .role(AppRole.USER)
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .accountCreationDate(LocalDate.now())
                 .build();
