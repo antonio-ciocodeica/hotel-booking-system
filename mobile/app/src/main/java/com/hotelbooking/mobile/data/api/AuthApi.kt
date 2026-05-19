@@ -1,4 +1,4 @@
-package com.hotelbooking.mobile.network
+package com.hotelbooking.mobile.data.api
 
 import com.hotelbooking.mobile.model.AuthResponse
 import com.hotelbooking.mobile.model.LoginRequest

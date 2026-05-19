@@ -1,47 +1,24 @@
 package com.hotelbooking.mobile.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.hotelbooking.mobile.model.LoginRequest
-import kotlinx.coroutines.launch
-import com.hotelbooking.mobile.network.RetrofitClient
+import com.hotelbooking.mobile.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
+    viewModel: LoginViewModel,
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var responseMessage by remember { mutableStateOf("") }
-
-    val coroutineScope = rememberCoroutineScope()
-
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
@@ -51,56 +28,42 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = viewModel.email,
+            onValueChange = { viewModel.email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isLoading
         )
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = viewModel.password,
+            onValueChange = { viewModel.password = it },
             label = { Text("Parolă") },
-            visualTransformation = PasswordVisualTransformation(), // Ascunde textul parolei
+            visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isLoading
         )
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = {
-                coroutineScope.launch {
-                    responseMessage = "Se procesează..."
-                    try {
-                        val response = RetrofitClient.api.login(LoginRequest(email, password))
-                        if (response.isSuccessful) {
-                            val authResponse = response.body()
-                            if (authResponse != null) {
-                                RetrofitClient.getTokenManager().saveToken(authResponse.token)
-                                responseMessage = "✅ Login reușit!"
-                                onLoginSuccess()
-                            } else {
-                                responseMessage = "❌ Eroare: Răspuns invalid de la server"
-                            }
-                        } else {
-                            responseMessage = "❌ Eroare: Credențiale incorecte"
-                        }
-                    } catch (e: Exception) {
-                        responseMessage = "⚠️ Eroare rețea: ${e.localizedMessage}"
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+            onClick = { viewModel.login(onLoginSuccess) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !viewModel.isLoading
         ) {
-            Text("Login")
+            if (viewModel.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+            } else {
+                Text("Login")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = responseMessage, color = MaterialTheme.colorScheme.primary)
+        Text(text = viewModel.message, color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = onNavigateToRegister) {
+        TextButton(onClick = onNavigateToRegister, enabled = !viewModel.isLoading) {
             Text("Nu ai cont? Înregistrează-te aici")
         }
     }
