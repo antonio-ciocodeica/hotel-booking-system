@@ -10,8 +10,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onLogout: () -> Unit,
-    onNavigateToHotels: () -> Unit
+    onLogout: () -> Unit
 ) {
 
     Column(
@@ -32,10 +31,6 @@ fun HomeScreen(
 
         Button(onClick = onLogout) {
             Text("Logout")
-        }
-
-        Button(onClick = { onNavigateToHotels() }) {
-            Text("Vezi Hoteluri")
         }
     }
 }
