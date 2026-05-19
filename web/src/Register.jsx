@@ -13,7 +13,6 @@ const Register = () => {
     setMessage('');
 
     try {
-      // Apelăm endpoint-ul specific pentru STAFF
       const response = await fetch('http://127.0.0.1:8080/auth/register/staff', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

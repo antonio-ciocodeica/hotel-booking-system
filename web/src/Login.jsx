@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // <-- Am adăugat Link aici
+import { useNavigate, Link } from 'react-router-dom'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -37,6 +37,7 @@ const Login = () => {
 
       if (data.token) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
         navigate('/dashboard');
       } else {
         setError('Failed to generate token.');

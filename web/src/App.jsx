@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import './App.css'; // Aici importăm fișierul CSS (acum golit de erori)
+import './App.css';
 
 function App() {
   return (

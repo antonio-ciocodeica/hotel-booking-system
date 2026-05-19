@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Login from './Login.jsx';
 import Register from './Register.jsx';
-import Dashboard from './Dashboard.jsx'; // <-- IMPORTĂ NOUA COMPONENTĂ
+import Dashboard from './Dashboard.jsx';
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -16,7 +16,6 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
 
-                {/* RUTA PENTRU LOGOUT ȘI STAFF */}
                 <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
         </Router>

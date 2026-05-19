@@ -2,12 +2,14 @@ package com.hotelbooking.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "audit_logs")
 @Data
+@ToString(exclude = {"staff"})
 public class AuditLogEntity {
 
     @Id

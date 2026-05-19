@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -64,14 +64,10 @@ public class SecurityConfig {
         };
     }
 
-    /**
-     * staff.role meaning in DB:
-     * 1 = STAFF
-     * 2 = ADMIN
-     */
+
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole != null && staffRole == 2) {
-            return AppRole.ADMIN; // <--- 1. MODIFICAT: MANAGER a devenit ADMIN
+            return AppRole.ADMIN;
         }
         return AppRole.STAFF;
     }
@@ -92,12 +88,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/register/staff").permitAll() // <--- 2. ADAUGAT: Permisiune pt register staff
+                        .requestMatchers(HttpMethod.POST, "/auth/register/staff").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login/staff").permitAll()
                         .requestMatchers(HttpMethod.POST, "/bookings/availability").permitAll()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-in").authenticated()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-out").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/room-types").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/hotels").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/hotels").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/hotels/*/room-types").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/room-types/*/rooms").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -109,9 +110,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Asigură-te că portul de aici corespunde cu cel pe care rulează React-ul tău
         configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"));
-
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
