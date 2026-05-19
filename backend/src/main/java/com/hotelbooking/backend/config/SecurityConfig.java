@@ -90,8 +90,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/bookings/availability").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/{id}/check-in").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/bookings/availability").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/bookings/*/check-in").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/bookings/*/check-out").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
