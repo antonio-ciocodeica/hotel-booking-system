@@ -9,7 +9,8 @@ package com.hotelbooking.backend.security;
 public enum AppRole {
     USER,
     STAFF,
-    MANAGER;
+    MANAGER,
+    ADMIN;
 
     public String asAuthority() {
         // Spring Security expects role authorities with the "ROLE_" prefix.
