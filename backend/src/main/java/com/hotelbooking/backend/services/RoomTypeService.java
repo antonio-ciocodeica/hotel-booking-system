@@ -12,5 +12,9 @@ public interface RoomTypeService {
     RoomTypeResponse createRoomType(UUID hotelId, RoomTypeRequest request);
 
     RoomTypeResponse addImages(UUID roomTypeId, List<MultipartFile> files);
+
+    List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId);
+
+    RoomTypeResponse getRoomTypeById(UUID roomTypeId);
 }
 

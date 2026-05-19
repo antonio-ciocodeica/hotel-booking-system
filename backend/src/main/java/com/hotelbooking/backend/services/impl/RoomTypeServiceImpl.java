@@ -91,6 +91,22 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         return toResponse(roomType);
     }
 
+    @Override
+    public List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId) {
+        // Listing is allowed for authenticated users; hotel-scoping for STAFF is handled by the caller if needed.
+        return roomTypeRepository.findAllByHotel_IdOrderByRoomNameAsc(hotelId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public RoomTypeResponse getRoomTypeById(UUID roomTypeId) {
+        RoomTypeEntity roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new EntityNotFoundException("Room type not found"));
+        return toResponse(roomType);
+    }
+
     private StaffEntity getAuthenticatedStaffOrThrow() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getName() == null) {
