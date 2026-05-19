@@ -64,14 +64,20 @@ public class SecurityConfig {
 
     /**
      * staff.role meaning in DB:
-     * 1 = receptioner (STAFF)
-     * 2 = administrator (ADMIN) - global admin (can operate across hotels)
+     * 1 = staff (STAFF)
+     * 2 = manager (MANAGER) - hotel employee (normally tied to a hotel)
+     * 3 = admin (ADMIN) - global admin (can operate across hotels)
      */
     private static AppRole mapStaffRole(Integer staffRole) {
-        if (staffRole != null && staffRole == 2) {
-            return AppRole.ADMIN;
+        if (staffRole == null) {
+            return AppRole.STAFF;
         }
-        return AppRole.STAFF;
+
+        return switch (staffRole) {
+            case 3 -> AppRole.ADMIN;
+            case 2 -> AppRole.MANAGER;
+            default -> AppRole.STAFF;
+        };
     }
 
     @Bean
