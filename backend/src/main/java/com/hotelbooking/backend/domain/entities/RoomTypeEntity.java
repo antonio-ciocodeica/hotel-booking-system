@@ -20,10 +20,10 @@ public class RoomTypeEntity {
     @JoinColumn(name = "hotel_id", nullable = false)
     private HotelEntity hotel;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String roomName;
 
-    @Column(nullable = false)
+    @Column
     private String roomFacilities;
 
     @Column(nullable = false)
@@ -37,5 +37,8 @@ public class RoomTypeEntity {
 
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RoomEntity> rooms;
+
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<RoomTypeImageEntity> images;
 
 }

@@ -19,6 +19,8 @@ app:
   jwt:
     secret: "cheia-secreta-jwt-minim-32-caractere-schimb-inainte-de-productie"
     expiration: 86400000
+  uploads:
+    base-dir: uploads
   bootstrap-admin:
     enabled: true
     # Tip: set these via environment variables instead of committing secrets.
