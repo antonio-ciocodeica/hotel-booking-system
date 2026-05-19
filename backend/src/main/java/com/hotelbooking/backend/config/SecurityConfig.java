@@ -24,8 +24,6 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.http.HttpMethod;
 
 import java.util.List;
 
@@ -67,11 +65,11 @@ public class SecurityConfig {
     /**
      * staff.role meaning in DB:
      * 1 = receptioner (STAFF)
-     * 2 = manager (MANAGER)
+     * 2 = administrator (ADMIN) - global admin (can operate across hotels)
      */
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole != null && staffRole == 2) {
-            return AppRole.MANAGER;
+            return AppRole.ADMIN;
         }
         return AppRole.STAFF;
     }
