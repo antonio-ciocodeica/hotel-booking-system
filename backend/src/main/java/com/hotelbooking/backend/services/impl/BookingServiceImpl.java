@@ -94,9 +94,10 @@ public class BookingServiceImpl implements BookingService {
                 request.getRoomId(), List.of(0, 1), request.getCheckOut(), request.getCheckIn());
 
         if (!conflicts.isEmpty()) {
+            BookingEntity conflict = conflicts.get(0);
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Room not available in the requested interval!"
+                    "Room not available from " + conflict.getCheckIn() + " to " + conflict.getCheckOut()
             );
         }
 
@@ -123,7 +124,7 @@ public class BookingServiceImpl implements BookingService {
             throw new SecurityException("You are not authorized to perform this action");
         }
 
-        if (booking.getStatus() == 2 || booking.getStatus() == 3) {
+        if (booking.getStatus() == 3) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Booking cannot be canceled anymore (status: " + booking.getStatus() + ")"
@@ -167,10 +168,25 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
 
         if (booking.getStatus() != 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Booking cannot be processed for check-in for (Status: " + booking.getStatus() + ")");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot check-in. Current status: " + booking.getStatus());
         }
 
         booking.setStatus(1);
+
+        return bookingMapper.toDto(bookingRepository.save(booking));
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse performCheckOut(UUID code) {
+        BookingEntity booking = bookingRepository.findById(code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+
+        if (booking.getStatus() != 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot check-out. Current status: " + booking.getStatus());
+        }
+
+        booking.setStatus(2);
 
         return bookingMapper.toDto(bookingRepository.save(booking));
     }

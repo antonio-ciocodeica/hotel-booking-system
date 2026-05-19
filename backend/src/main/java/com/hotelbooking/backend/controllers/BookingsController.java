@@ -60,4 +60,9 @@ public class BookingsController{
     public ResponseEntity<BookingResponse> checkInRezervare(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.performCheckIn(id));
     }
+
+    @PostMapping("/{id}/check-out")
+    public ResponseEntity<BookingResponse> checkOutRezervare(@PathVariable UUID id) {
+        return ResponseEntity.ok(bookingService.performCheckOut(id));
+    }
 }
