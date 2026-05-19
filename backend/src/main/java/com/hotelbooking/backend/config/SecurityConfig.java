@@ -67,11 +67,11 @@ public class SecurityConfig {
     /**
      * staff.role meaning in DB:
      * 1 = receptioner (STAFF)
-     * 2 = administrator (ADMIN)
+     * 2 = manager (MANAGER)
      */
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole != null && staffRole == 2) {
-            return AppRole.ADMIN;
+            return AppRole.MANAGER;
         }
         return AppRole.STAFF;
     }
