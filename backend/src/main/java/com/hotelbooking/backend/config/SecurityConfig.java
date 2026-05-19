@@ -65,8 +65,7 @@ public class SecurityConfig {
     /**
      * staff.role meaning in DB:
      * 1 = staff (STAFF)
-     * 2 = manager (MANAGER) - hotel employee (normally tied to a hotel)
-     * 3 = admin (ADMIN) - global admin (can operate across hotels)
+     * 2 = admin (ADMIN) - global admin (can operate across hotels)
      */
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole == null) {
@@ -74,8 +73,7 @@ public class SecurityConfig {
         }
 
         return switch (staffRole) {
-            case 3 -> AppRole.ADMIN;
-            case 2 -> AppRole.MANAGER;
+            case 2 -> AppRole.ADMIN;
             default -> AppRole.STAFF;
         };
     }

@@ -42,7 +42,7 @@ public class BootstrapAdminSeeder implements ApplicationRunner {
                 .hotel(null)
                 .email(config.email())
                 .passwordHash(passwordEncoder.encode(config.password()))
-                .role(3)
+                .role(2)
                 .accountStatus(1)
                 .build();
 

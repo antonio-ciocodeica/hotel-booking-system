@@ -9,7 +9,6 @@ package com.hotelbooking.backend.security;
 public enum AppRole {
     USER,
     STAFF,
-    MANAGER,
     ADMIN;
 
     public String asAuthority() {
