@@ -2,5 +2,5 @@
 -- Existing rows default to USER.
 
 ALTER TABLE users
-    ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'USER';
+    ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'USER';
 
