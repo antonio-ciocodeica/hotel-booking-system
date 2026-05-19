@@ -124,14 +124,14 @@ public class BookingServiceImpl implements BookingService {
             throw new SecurityException("You are not authorized to perform this action");
         }
 
-        if (booking.getStatus() == 3) {
+        if (booking.getStatus() == 4) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Booking cannot be canceled anymore (status: " + booking.getStatus() + ")"
             );
         }
 
-        booking.setStatus(3);
+        booking.setStatus(4);
 
         return bookingMapper.toDto(bookingRepository.save(booking));
     }
@@ -176,18 +176,18 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toDto(bookingRepository.save(booking));
     }
 
-    @Override
-    @Transactional
-    public BookingResponse performCheckOut(UUID code) {
-        BookingEntity booking = bookingRepository.findById(code)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+     @Override
+     @Transactional
+     public BookingResponse performCheckOut(UUID code) {
+         BookingEntity booking = bookingRepository.findById(code)
+                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
 
-        if (booking.getStatus() != 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot check-out. Current status: " + booking.getStatus());
-        }
+         if (booking.getStatus() != 1) {
+             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot check-out. Current status: " + booking.getStatus());
+         }
 
-        booking.setStatus(2);
+         booking.setStatus(3);
 
-        return bookingMapper.toDto(bookingRepository.save(booking));
-    }
+         return bookingMapper.toDto(bookingRepository.save(booking));
+     }
 }

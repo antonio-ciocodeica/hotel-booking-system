@@ -7,6 +7,7 @@ import com.hotelbooking.backend.services.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,11 +58,13 @@ public class BookingsController{
     }
 
     @PostMapping("/{id}/check-in")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<BookingResponse> checkInRezervare(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.performCheckIn(id));
     }
 
     @PostMapping("/{id}/check-out")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<BookingResponse> checkOutRezervare(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.performCheckOut(id));
     }
