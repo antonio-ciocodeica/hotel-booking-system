@@ -1,0 +1,73 @@
+package com.hotelbooking.backend.services.impl;
+
+import com.hotelbooking.backend.domain.dto.rooms.RoomRequest;
+import com.hotelbooking.backend.domain.dto.rooms.RoomResponse;
+import com.hotelbooking.backend.domain.entities.RoomEntity;
+import com.hotelbooking.backend.domain.entities.RoomTypeEntity;
+import com.hotelbooking.backend.domain.entities.StaffEntity;
+import com.hotelbooking.backend.repositories.RoomRepository;
+import com.hotelbooking.backend.repositories.RoomTypeRepository;
+import com.hotelbooking.backend.repositories.StaffRepository;
+import com.hotelbooking.backend.services.RoomService;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class RoomServiceImpl implements RoomService {
+
+    private final RoomRepository roomRepository;
+    private final RoomTypeRepository roomTypeRepository;
+    private final StaffRepository staffRepository;
+
+    @Override
+    public RoomResponse createRoom(UUID roomTypeId, RoomRequest request) {
+        StaffEntity staff = getAuthenticatedStaffOrThrow();
+
+        RoomTypeEntity roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new EntityNotFoundException("Room type not found"));
+
+        // Managers can only create rooms for their own hotel
+        UUID staffHotelId = staff.getHotel() != null ? staff.getHotel().getId() : null;
+        UUID roomTypeHotelId = roomType.getHotel() != null ? roomType.getHotel().getId() : null;
+        if (staffHotelId == null || roomTypeHotelId == null || !staffHotelId.equals(roomTypeHotelId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create rooms for your hotel");
+        }
+
+        if (roomRepository.existsByRoomType_IdAndRoomNumber(roomTypeId, request.getRoomNumber())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room number already exists for this room type");
+        }
+
+        RoomEntity room = new RoomEntity();
+        room.setRoomType(roomType);
+        room.setRoomNumber(request.getRoomNumber());
+        room.setRoomStatus(request.getRoomStatus() == null ? 0 : request.getRoomStatus());
+
+        RoomEntity saved = roomRepository.save(room);
+
+        return new RoomResponse(
+                saved.getId(),
+                saved.getRoomType().getId(),
+                saved.getRoomNumber(),
+                saved.getRoomStatus()
+        );
+    }
+
+    private StaffEntity getAuthenticatedStaffOrThrow() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        }
+
+        return staffRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Only staff members can perform this action"));
+    }
+}
+

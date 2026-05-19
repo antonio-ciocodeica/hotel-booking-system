@@ -19,7 +19,7 @@ public class RoomEntity {
     @JoinColumn(name = "room_type_id", nullable = false)
     private RoomTypeEntity roomType;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private Integer roomNumber;
 
     @Column(nullable = false)
