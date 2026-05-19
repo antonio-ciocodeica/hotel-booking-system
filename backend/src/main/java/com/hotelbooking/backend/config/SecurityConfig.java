@@ -1,6 +1,5 @@
 package com.hotelbooking.backend.config;
 
-
 import com.hotelbooking.backend.domain.entities.StaffEntity;
 import com.hotelbooking.backend.domain.entities.UserEntity;
 import com.hotelbooking.backend.repositories.StaffRepository;
@@ -24,8 +23,9 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
@@ -66,12 +66,12 @@ public class SecurityConfig {
 
     /**
      * staff.role meaning in DB:
-     * 1 = receptioner (STAFF)
-     * 2 = manager (MANAGER)
+     * 1 = STAFF
+     * 2 = ADMIN
      */
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole != null && staffRole == 2) {
-            return AppRole.MANAGER;
+            return AppRole.ADMIN; // <--- 1. MODIFICAT: MANAGER a devenit ADMIN
         }
         return AppRole.STAFF;
     }
@@ -83,13 +83,18 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/register/staff").permitAll() // <--- 2. ADAUGAT: Permisiune pt register staff
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login/staff").permitAll()
                         .requestMatchers(HttpMethod.POST, "/bookings/availability").permitAll()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-in").authenticated()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-out").authenticated()
@@ -101,6 +106,22 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // Asigură-te că portul de aici corespunde cu cel pe care rulează React-ul tău
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"));
+
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
@@ -109,5 +130,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 }

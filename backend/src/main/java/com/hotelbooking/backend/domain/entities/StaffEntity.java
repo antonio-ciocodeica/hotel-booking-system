@@ -22,7 +22,7 @@ public class StaffEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
+    @JoinColumn(name = "hotel_id", nullable = true)
     private HotelEntity hotel;
 
     @Column(nullable = false)
