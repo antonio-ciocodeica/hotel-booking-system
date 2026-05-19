@@ -1,7 +1,9 @@
 package com.hotelbooking.backend.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "hotels")
 @Data
+@ToString(exclude = {"roomTypes", "staffMembers"})
 public class HotelEntity {
 
     @Id
@@ -26,9 +29,11 @@ public class HotelEntity {
 
     private String description;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<RoomTypeEntity> roomTypes;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<StaffEntity> staffMembers;
 

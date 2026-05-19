@@ -15,9 +15,6 @@ public class RoomRequest {
     @Min(1)
     private Integer roomNumber;
 
-    /**
-     * 0 = available, 1 = occupied, 2 = unavailable
-     */
     private Integer roomStatus;
 }
 

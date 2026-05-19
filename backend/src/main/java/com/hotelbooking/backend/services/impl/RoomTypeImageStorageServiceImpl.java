@@ -53,7 +53,6 @@ public class RoomTypeImageStorageServiceImpl implements RoomTypeImageStorageServ
             Files.createDirectories(directory);
             Path target = directory.resolve(safeFileName).normalize();
 
-            // Ensure the target path is still within the intended directory (basic traversal protection)
             if (!target.startsWith(directory)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid file name");
             }

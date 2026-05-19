@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"})
 @RestController
 @RequiredArgsConstructor
 public class RoomsController {
@@ -43,4 +44,3 @@ public class RoomsController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
-

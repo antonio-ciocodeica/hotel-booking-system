@@ -2,6 +2,7 @@ package com.hotelbooking.backend.controllers;
 
 import com.hotelbooking.backend.domain.dto.roomtypes.RoomTypeRequest;
 import com.hotelbooking.backend.domain.dto.roomtypes.RoomTypeResponse;
+import com.hotelbooking.backend.domain.entities.RoomTypeEntity;
 import com.hotelbooking.backend.services.RoomTypeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"})
 @RestController
 @RequiredArgsConstructor
 public class RoomTypesController {
@@ -41,7 +43,7 @@ public class RoomTypesController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     @PostMapping(value = "/room-types/{roomTypeId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<RoomTypeResponse> uploadRoomTypeImages(
             @PathVariable UUID roomTypeId,
@@ -49,5 +51,11 @@ public class RoomTypesController {
     ) {
         return ResponseEntity.ok(roomTypeService.addImages(roomTypeId, files));
     }
-}
 
+    @GetMapping("/room-types")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    public ResponseEntity<List<RoomTypeEntity>> getAllRoomTypes() {
+        return ResponseEntity.ok(roomTypeService.findAll());
+    }
+
+}

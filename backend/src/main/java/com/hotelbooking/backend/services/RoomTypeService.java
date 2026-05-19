@@ -2,6 +2,7 @@ package com.hotelbooking.backend.services;
 
 import com.hotelbooking.backend.domain.dto.roomtypes.RoomTypeRequest;
 import com.hotelbooking.backend.domain.dto.roomtypes.RoomTypeResponse;
+import com.hotelbooking.backend.domain.entities.RoomTypeEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

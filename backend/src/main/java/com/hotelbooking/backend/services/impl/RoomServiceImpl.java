@@ -35,11 +35,23 @@ public class RoomServiceImpl implements RoomService {
         RoomTypeEntity roomType = roomTypeRepository.findById(roomTypeId)
                 .orElseThrow(() -> new EntityNotFoundException("Room type not found"));
 
-        // Managers can only create rooms for their own hotel
         UUID staffHotelId = staff.getHotel() != null ? staff.getHotel().getId() : null;
         UUID roomTypeHotelId = roomType.getHotel() != null ? roomType.getHotel().getId() : null;
-        if (staffHotelId == null || roomTypeHotelId == null || !staffHotelId.equals(roomTypeHotelId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create rooms for your hotel");
+        System.out.println("DEBUG: Staff email: " + staff.getEmail());
+        System.out.println("DEBUG: Staff hotel ID: " + (staff.getHotel() != null ? staff.getHotel().getId() : "NULL"));
+        System.out.println("DEBUG: RoomType hotel ID: " + roomTypeHotelId);
+        System.out.println("DEBUG: RoomType ID: " + roomTypeId);
+        System.out.println("DEBUG: RoomRequest: " + request);
+
+        if (roomTypeHotelId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Room type is not associated with any hotel");
+        }
+        if (roomTypeHotelId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Room type is not associated with any hotel");
+        }
+
+        if (staffHotelId != null && !staffHotelId.equals(roomTypeHotelId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create rooms for your hotel. Staff Hotel ID: " + staffHotelId + " RoomType Hotel ID: " + roomTypeHotelId);
         }
 
         if (roomRepository.existsByRoomType_IdAndRoomNumber(roomTypeId, request.getRoomNumber())) {
@@ -52,6 +64,8 @@ public class RoomServiceImpl implements RoomService {
         room.setRoomStatus(request.getRoomStatus() == null ? 0 : request.getRoomStatus());
 
         RoomEntity saved = roomRepository.save(room);
+
+        System.out.println("DEBUG: RoomEntity saved id: " + saved.getId());
 
         return new RoomResponse(
                 saved.getId(),
@@ -97,4 +111,3 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Only staff members can perform this action"));
     }
 }
-

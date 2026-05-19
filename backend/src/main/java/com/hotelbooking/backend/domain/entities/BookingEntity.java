@@ -2,6 +2,7 @@ package com.hotelbooking.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "bookings")
 @Data
+@ToString(exclude = {"user", "room"})
 public class BookingEntity {
 
     @Id

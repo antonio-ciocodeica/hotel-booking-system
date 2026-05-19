@@ -37,7 +37,6 @@ public class BootstrapAdminSeeder implements ApplicationRunner {
             return;
         }
 
-        // Global admin is represented in staff with role=2 and no hotel.
         StaffEntity admin = StaffEntity.builder()
                 .hotel(null)
                 .email(config.email())

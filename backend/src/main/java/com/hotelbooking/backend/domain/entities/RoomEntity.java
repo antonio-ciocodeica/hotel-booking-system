@@ -2,6 +2,7 @@ package com.hotelbooking.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +10,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "rooms")
 @Data
+@ToString(exclude = {"roomType", "bookings"})
 public class RoomEntity {
 
     @Id

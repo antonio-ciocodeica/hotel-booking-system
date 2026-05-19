@@ -3,7 +3,9 @@ package com.hotelbooking.backend.controllers;
 import com.hotelbooking.backend.domain.dto.hotels.HotelRequest;
 import com.hotelbooking.backend.domain.dto.hotels.HotelResponse;
 import com.hotelbooking.backend.domain.entities.HotelEntity;
+import com.hotelbooking.backend.domain.entities.RoomTypeEntity;
 import com.hotelbooking.backend.repositories.HotelRepository;
+import com.hotelbooking.backend.repositories.RoomTypeRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,7 @@ import java.util.UUID;
 public class HotelsController {
 
 	private final HotelRepository hotelRepository;
+	private final RoomTypeRepository roomTypeRepository;
 
 	@GetMapping
 	public ResponseEntity<List<HotelResponse>> getHotels() {
@@ -79,4 +82,14 @@ public class HotelsController {
 	}
 }
 
+	@GetMapping
+	@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+	public ResponseEntity<List<HotelEntity>> getAllHotels() {
+		return ResponseEntity.ok(hotelRepository.findAll());
+	}
 
+	@GetMapping("/{hotelId}/room-types")
+	public ResponseEntity<List<RoomTypeEntity>> getRoomTypesByHotel(@PathVariable UUID hotelId) {
+		return ResponseEntity.ok(roomTypeRepository.findByHotelId(hotelId));
+	}
+}

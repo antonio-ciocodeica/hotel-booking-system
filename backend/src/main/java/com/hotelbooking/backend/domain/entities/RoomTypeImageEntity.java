@@ -2,12 +2,14 @@ package com.hotelbooking.backend.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "room_type_images")
 @Data
+@ToString(exclude = {"roomType"})
 public class RoomTypeImageEntity {
 
     @Id

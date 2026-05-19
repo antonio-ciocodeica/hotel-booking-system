@@ -38,12 +38,15 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     public RoomTypeResponse createRoomType(UUID hotelId, RoomTypeRequest request) {
         StaffEntity staff = getAuthenticatedStaffOrThrow();
 
-        if (staff.getHotel() == null || staff.getHotel().getId() == null || !staff.getHotel().getId().equals(hotelId)) {
+        if (staff.getHotel() != null && (staff.getHotel().getId() == null || !staff.getHotel().getId().equals(hotelId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create room types for your hotel");
         }
 
         HotelEntity hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new EntityNotFoundException("Hotel not found"));
+
+        System.out.println("DEBUG: Hotel ID: " + hotelId);
+        System.out.println("DEBUG: RoomTypeRequest: " + request);
 
         RoomTypeEntity entity = new RoomTypeEntity();
         entity.setHotel(hotel);
@@ -55,7 +58,17 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
         RoomTypeEntity saved = roomTypeRepository.save(entity);
 
+        System.out.println("DEBUG: RoomTypeEntity saved id: " + saved.getId());
+
         return toResponse(saved);
+    }
+
+    @Override
+    public List<RoomTypeResponse> findByHotelId(UUID hotelId) {
+        return roomTypeRepository.findByHotelId(hotelId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -70,7 +83,11 @@ public class RoomTypeServiceImpl implements RoomTypeService {
                 .orElseThrow(() -> new EntityNotFoundException("Room type not found"));
 
         UUID hotelId = roomType.getHotel() != null ? roomType.getHotel().getId() : null;
-        if (hotelId == null || staff.getHotel() == null || !hotelId.equals(staff.getHotel().getId())) {
+        if (hotelId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Room type is not associated with any hotel");
+        }
+
+        if (staff.getHotel() != null && !hotelId.equals(staff.getHotel().getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only add images to room types of your hotel");
         }
 
@@ -135,4 +152,3 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         );
     }
 }
-

@@ -1,121 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Link } from 'react-router-dom';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+      <div style={styles.background}>
+        <div style={styles.overlay}>
+          <div style={styles.content}>
+            <h1 style={styles.title}>Luxury Stays</h1>
+            <p style={styles.subtitle}>Hotel Management & Staff Portal</p>
+            <div style={styles.buttonContainer}>
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                <button style={styles.primaryButton}>Staff Login</button>
+              </Link>
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                <button style={styles.secondaryButton}>Register Account</button>
+              </Link>
+            </div>
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </div>
+  );
 }
 
-export default App
+const styles = {
+  background: {
+    height: '100vh',
+    backgroundImage: 'url("https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+  },
+  overlay: { height: '100%', width: '100%', backgroundColor: 'rgba(0, 34, 79, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  content: { textAlign: 'center', color: 'white', padding: '40px', backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)' },
+  title: { fontSize: '3rem', margin: '0 0 10px 0', fontWeight: 'bold', letterSpacing: '2px' },
+  subtitle: { fontSize: '1.2rem', margin: '0 0 40px 0', opacity: 0.9 },
+  buttonContainer: { display: 'flex', gap: '20px', justifyContent: 'center' },
+  primaryButton: { padding: '15px 35px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#0071c2', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)', transition: 'transform 0.2s' },
+  secondaryButton: { padding: '15px 35px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'transparent', color: 'white', border: '2px solid white', borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.2s, color 0.2s' }
+};
+
+export default App;
