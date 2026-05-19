@@ -10,10 +10,12 @@ import com.hotelbooking.backend.security.JwtAuthenticationFilter;
 import com.hotelbooking.backend.services.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -63,11 +65,11 @@ public class SecurityConfig {
     /**
      * staff.role meaning in DB:
      * 1 = receptioner (STAFF)
-     * 2 = administrator (ADMIN)
+     * 2 = manager (MANAGER)
      */
     private static AppRole mapStaffRole(Integer staffRole) {
         if (staffRole != null && staffRole == 2) {
-            return AppRole.ADMIN;
+            return AppRole.MANAGER;
         }
         return AppRole.STAFF;
     }
