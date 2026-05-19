@@ -13,11 +13,13 @@ import androidx.compose.ui.Modifier
 
 import com.hotelbooking.mobile.ui.theme.HotelBookingMobileTheme
 import com.hotelbooking.mobile.navigation.MainAuthScreen
+import com.hotelbooking.mobile.network.RetrofitClient
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        RetrofitClient.init(this)
         enableEdgeToEdge()
         setContent {
             HotelBookingMobileTheme {

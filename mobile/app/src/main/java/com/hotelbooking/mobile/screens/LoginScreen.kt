@@ -75,8 +75,14 @@ fun LoginScreen(
                     try {
                         val response = RetrofitClient.api.login(LoginRequest(email, password))
                         if (response.isSuccessful) {
-                            responseMessage = "✅ Login reușit!"
-                            onLoginSuccess()
+                            val authResponse = response.body()
+                            if (authResponse != null) {
+                                RetrofitClient.getTokenManager().saveToken(authResponse.token)
+                                responseMessage = "✅ Login reușit!"
+                                onLoginSuccess()
+                            } else {
+                                responseMessage = "❌ Eroare: Răspuns invalid de la server"
+                            }
                         } else {
                             responseMessage = "❌ Eroare: Credențiale incorecte"
                         }

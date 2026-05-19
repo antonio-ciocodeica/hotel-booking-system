@@ -1,5 +1,6 @@
 package com.hotelbooking.mobile.network
 
+import com.hotelbooking.mobile.model.AuthResponse
 import com.hotelbooking.mobile.model.LoginRequest
 import com.hotelbooking.mobile.model.RegisterRequest
 import retrofit2.Response
@@ -11,7 +12,7 @@ interface AuthApi {
     @POST("auth/login")
     suspend fun login(
         @Body request: LoginRequest
-    ): Response<Unit>
+    ): Response<AuthResponse>
 
     @POST("auth/register")
     suspend fun register(

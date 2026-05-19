@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import com.hotelbooking.mobile.screens.HomeScreen
 import com.hotelbooking.mobile.screens.LoginScreen
 import com.hotelbooking.mobile.screens.RegisterScreen
-import com.hotelbooking.mobile.screens.HotelListScreen
+import com.hotelbooking.mobile.network.RetrofitClient
 
 
 @Composable
@@ -14,7 +14,9 @@ fun MainAuthScreen(
 ) {
 
     var currentScreen by remember {
-        mutableStateOf("login")
+        mutableStateOf(
+            if (RetrofitClient.getTokenManager().getToken() != null) "home" else "login"
+        )
     }
 
     when (currentScreen) {
@@ -43,16 +45,8 @@ fun MainAuthScreen(
             modifier = modifier,
 
             onLogout = {
+                RetrofitClient.getTokenManager().clearToken()
                 currentScreen = "login"
-            },
-            onNavigateToHotels = {
-                currentScreen = "hotels"
-            }
-        )
-
-        "hotels" -> HotelListScreen(
-            onBack = {
-                currentScreen = "home"
             }
         )
     }
