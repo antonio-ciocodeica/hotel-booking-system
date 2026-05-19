@@ -23,7 +23,17 @@ public class RoomTypesController {
 
     private final RoomTypeService roomTypeService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
+    @GetMapping("/hotels/{hotelId}/room-types")
+    public ResponseEntity<List<RoomTypeResponse>> getRoomTypesByHotel(@PathVariable UUID hotelId) {
+        return ResponseEntity.ok(roomTypeService.getRoomTypesByHotel(hotelId));
+    }
+
+    @GetMapping("/room-types/{roomTypeId}")
+    public ResponseEntity<RoomTypeResponse> getRoomTypeById(@PathVariable UUID roomTypeId) {
+        return ResponseEntity.ok(roomTypeService.getRoomTypeById(roomTypeId));
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
     @PostMapping("/hotels/{hotelId}/room-types")
     public ResponseEntity<RoomTypeResponse> createRoomType(
             @PathVariable UUID hotelId,

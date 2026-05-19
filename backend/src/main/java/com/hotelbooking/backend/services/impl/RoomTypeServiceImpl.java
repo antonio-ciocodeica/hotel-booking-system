@@ -109,18 +109,19 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     }
 
     @Override
-    public List<RoomTypeEntity> findAll() {
-        StaffEntity staff = getAuthenticatedStaffOrThrow();
+    public List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId) {
+        // Listing is allowed for authenticated users; hotel-scoping for STAFF is handled by the caller if needed.
+        return roomTypeRepository.findAllByHotel_IdOrderByRoomNameAsc(hotelId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
 
-        if (staff.getRole() == 2) {
-            return roomTypeRepository.findAll();
-        }
-
-        if (staff.getHotel() != null) {
-            return roomTypeRepository.findByHotelId(staff.getHotel().getId());
-        }
-
-        return List.of();
+    @Override
+    public RoomTypeResponse getRoomTypeById(UUID roomTypeId) {
+        RoomTypeEntity roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new EntityNotFoundException("Room type not found"));
+        return toResponse(roomType);
     }
 
     private StaffEntity getAuthenticatedStaffOrThrow() {

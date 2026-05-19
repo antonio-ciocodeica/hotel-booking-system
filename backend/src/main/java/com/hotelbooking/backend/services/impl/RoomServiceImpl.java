@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -66,6 +67,32 @@ public class RoomServiceImpl implements RoomService {
 
         System.out.println("DEBUG: RoomEntity saved id: " + saved.getId());
 
+        return new RoomResponse(
+                saved.getId(),
+                saved.getRoomType().getId(),
+                saved.getRoomNumber(),
+                saved.getRoomStatus()
+        );
+    }
+
+    @Override
+    public List<RoomResponse> getRoomsByRoomType(UUID roomTypeId) {
+        // Listing rooms is allowed for authenticated users; if you need hotel-based access control,
+        // enforce it at the controller/service layer similarly to createRoom.
+        return roomRepository.findAllByRoomType_IdOrderByRoomNumberAsc(roomTypeId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public RoomResponse getRoomById(UUID roomId) {
+        RoomEntity room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new EntityNotFoundException("Room not found"));
+        return toResponse(room);
+    }
+
+    private RoomResponse toResponse(RoomEntity saved) {
         return new RoomResponse(
                 saved.getId(),
                 saved.getRoomType().getId(),

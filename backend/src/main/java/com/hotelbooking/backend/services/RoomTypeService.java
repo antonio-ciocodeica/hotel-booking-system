@@ -14,8 +14,8 @@ public interface RoomTypeService {
 
     RoomTypeResponse addImages(UUID roomTypeId, List<MultipartFile> files);
 
-    List<RoomTypeEntity> findAll();
+    List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId);
 
-    List<RoomTypeResponse> findByHotelId(UUID hotelId);
+    RoomTypeResponse getRoomTypeById(UUID roomTypeId);
 }
 
