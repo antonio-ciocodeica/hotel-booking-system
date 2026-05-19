@@ -1,6 +1,9 @@
 package com.hotelbooking.mobile.network
 
 import android.content.Context
+import com.hotelbooking.mobile.data.api.AuthApi
+import com.hotelbooking.mobile.data.api.BookingApi
+import com.hotelbooking.mobile.data.api.HotelApi
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -23,10 +26,17 @@ object RetrofitClient {
         val logging = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
-        
+
+        val interceptor = try {
+            AuthInterceptor(getTokenManager())
+        } catch (e: Exception) {
+            // Fallback interceptor if TokenManager is not ready
+            AuthInterceptor(TokenManager(null))
+        }
+
         OkHttpClient.Builder()
             .addInterceptor(logging)
-            .addInterceptor(AuthInterceptor(tokenManager ?: throw IllegalStateException("TokenManager not initialized. Call init(context) first.")))
+            .addInterceptor(interceptor)
             .build()
     }
 
@@ -37,5 +47,23 @@ object RetrofitClient {
             .client(okHttpClient)
             .build()
             .create(AuthApi::class.java)
+    }
+
+    val bookingApi: BookingApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create(BookingApi::class.java)
+    }
+
+    val hotelApi: HotelApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+            .create(HotelApi::class.java)
     }
 }
