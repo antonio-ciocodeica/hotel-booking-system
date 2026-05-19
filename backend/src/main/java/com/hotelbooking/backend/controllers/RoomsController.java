@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,6 +18,16 @@ import java.util.UUID;
 public class RoomsController {
 
     private final RoomService roomService;
+
+    @GetMapping("/room-types/{roomTypeId}/rooms")
+    public ResponseEntity<List<RoomResponse>> getRoomsByRoomType(@PathVariable UUID roomTypeId) {
+        return ResponseEntity.ok(roomService.getRoomsByRoomType(roomTypeId));
+    }
+
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<RoomResponse> getRoomById(@PathVariable UUID roomId) {
+        return ResponseEntity.ok(roomService.getRoomById(roomId));
+    }
 
     /**
      * Create a room under a room type.
