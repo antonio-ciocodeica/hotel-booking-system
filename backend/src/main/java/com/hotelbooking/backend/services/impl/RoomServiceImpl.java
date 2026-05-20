@@ -46,11 +46,9 @@ public class RoomServiceImpl implements RoomService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Staff can only create rooms for their assigned hotel");
         }
 
-        // --- VERIFICAREA NOUĂ ȘI CORECTĂ ---
         if (roomRepository.existsByRoomType_Hotel_IdAndRoomNumber(roomTypeHotelId, request.getRoomNumber())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Room number " + request.getRoomNumber() + " already exists in this hotel!");
         }
-        // -----------------------------------
 
         RoomEntity room = new RoomEntity();
         room.setRoomType(roomType);
@@ -69,8 +67,6 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<RoomResponse> getRoomsByRoomType(UUID roomTypeId) {
-        // Listing rooms is allowed for authenticated users; if you need hotel-based access control,
-        // enforce it at the controller/service layer similarly to createRoom.
         return roomRepository.findAllByRoomType_IdOrderByRoomNumberAsc(roomTypeId)
                 .stream()
                 .map(this::toResponse)

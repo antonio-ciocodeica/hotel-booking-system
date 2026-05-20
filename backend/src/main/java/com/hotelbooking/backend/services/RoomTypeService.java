@@ -20,5 +20,7 @@ public interface RoomTypeService {
 
     List<RoomTypeResponse> findAll();
 
+    List<RoomTypeResponse> findAllAsResponse();
+
 }
 

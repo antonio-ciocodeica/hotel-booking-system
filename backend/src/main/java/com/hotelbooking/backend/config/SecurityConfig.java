@@ -99,6 +99,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/hotels").authenticated()
                         .requestMatchers(HttpMethod.POST, "/hotels/*/room-types").authenticated()
                         .requestMatchers(HttpMethod.POST, "/room-types/*/rooms").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -107,6 +107,14 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     }
 
     @Override
+    public List<RoomTypeResponse> findAllAsResponse() {
+        return roomTypeRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
     public List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId) {
         return roomTypeRepository.findAllByHotel_IdOrderByRoomNameAsc(hotelId)
                 .stream()
