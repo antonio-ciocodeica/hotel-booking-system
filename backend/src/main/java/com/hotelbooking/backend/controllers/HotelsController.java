@@ -40,7 +40,6 @@ public class HotelsController {
 		return new ResponseEntity<>(toResponse(saved), HttpStatus.CREATED);
 	}
 
-	// AICI E MODIFICAREA: Returnăm HotelResponse, nu HotelEntity
 	@GetMapping
 	@PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
 	public ResponseEntity<List<HotelResponse>> getAllHotels() {
@@ -50,7 +49,6 @@ public class HotelsController {
 		return ResponseEntity.ok(hotels);
 	}
 
-	// Funcție ajutătoare pentru transformare Entity -> Response (DTO)
 	private HotelResponse toResponse(HotelEntity saved) {
 		return new HotelResponse(
 				saved.getId(),

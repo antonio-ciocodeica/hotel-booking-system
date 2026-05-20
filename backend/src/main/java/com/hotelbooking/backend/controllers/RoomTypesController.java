@@ -55,7 +55,7 @@ public class RoomTypesController {
     @GetMapping("/room-types")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     public ResponseEntity<List<RoomTypeResponse>> getAllRoomTypes() {
-        return ResponseEntity.ok(roomTypeService.findAll());
+        return ResponseEntity.ok(roomTypeService.findAllAsResponse());
     }
 
 }
