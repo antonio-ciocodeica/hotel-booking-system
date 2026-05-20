@@ -87,6 +87,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+						// Public hotel discovery endpoints (no login required)
+						.requestMatchers(HttpMethod.GET, "/hotels/search").permitAll()
+						.requestMatchers(HttpMethod.GET, "/hotels/*/availability").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register/staff").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
