@@ -61,4 +61,7 @@ dependencies {
 
     // Navigation pentru a te muta între ecrane (ex: de la Login la Home)
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Coil pentru încărcare imagini
+    implementation(libs.coil.compose)
 }

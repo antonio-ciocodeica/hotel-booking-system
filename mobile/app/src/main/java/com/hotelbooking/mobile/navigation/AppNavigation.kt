@@ -12,7 +12,8 @@ sealed class Screen {
     object Search : Screen()
     object HotelList : Screen()
     object MyBookings : Screen()
-    data class RoomList(val hotelId: UUID) : Screen()
+    data class RoomTypeList(val hotelId: UUID) : Screen()
+    data class RoomList(val hotelId: UUID, val roomTypeId: UUID) : Screen()
     data class Booking(val roomId: UUID) : Screen()
 }
 
@@ -55,7 +56,7 @@ fun AppNavigation() {
         )
         is Screen.HotelList -> HotelListScreen(
             viewModel = hotelViewModel,
-            onHotelClick = { hotelId -> currentScreen = Screen.RoomList(hotelId) },
+            onHotelClick = { hotelId -> currentScreen = Screen.RoomTypeList(hotelId) },
             onLogout = {
                 ServiceLocator.authRepository.logout()
                 currentScreen = Screen.Login
@@ -68,8 +69,15 @@ fun AppNavigation() {
             viewModel = bookingViewModel,
             onBack = { currentScreen = Screen.Search }
         )
+        is Screen.RoomTypeList -> RoomTypeListScreen(
+            hotelId = screen.hotelId,
+            viewModel = hotelViewModel,
+            onRoomTypeClick = { roomTypeId -> currentScreen = Screen.RoomList(screen.hotelId, roomTypeId) },
+            onBack = { currentScreen = Screen.HotelList }
+        )
         is Screen.RoomList -> RoomListScreen(
             hotelId = screen.hotelId,
+            roomTypeId = screen.roomTypeId,
             viewModel = hotelViewModel,
             onRoomClick = { roomId ->
                 if (ServiceLocator.authRepository.isLoggedIn()) {
@@ -78,7 +86,7 @@ fun AppNavigation() {
                     currentScreen = Screen.Login
                 }
             },
-            onBack = { currentScreen = Screen.HotelList }
+            onBack = { currentScreen = Screen.RoomTypeList(screen.hotelId) }
         )
         is Screen.Booking -> BookingScreen(
             roomId = screen.roomId,
@@ -86,7 +94,7 @@ fun AppNavigation() {
             initialCheckOut = hotelViewModel.checkOutDate,
             viewModel = bookingViewModel,
             onBookingSuccess = { currentScreen = Screen.MyBookings },
-            onBack = { currentScreen = Screen.HotelList }
+            onBack = { currentScreen = Screen.HotelList } // Or back to room list if we had the IDs
         )
     }
 }

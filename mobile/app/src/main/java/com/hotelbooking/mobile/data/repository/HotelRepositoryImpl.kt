@@ -3,6 +3,7 @@ package com.hotelbooking.mobile.data.repository
 import com.hotelbooking.mobile.data.api.HotelApi
 import com.hotelbooking.mobile.domain.model.Hotel
 import com.hotelbooking.mobile.domain.model.Room
+import com.hotelbooking.mobile.domain.model.RoomType
 import com.hotelbooking.mobile.domain.repository.HotelRepository
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -34,25 +35,49 @@ class HotelRepositoryImpl(
         }
     }
 
-    override suspend fun getRoomsForHotel(hotelId: UUID, checkIn: LocalDate, checkOut: LocalDate): Result<List<Room>> {
+    override suspend fun getRoomTypesAvailability(hotelId: UUID, checkIn: LocalDate, checkOut: LocalDate): Result<List<RoomType>> {
         return try {
-            val response = hotelApi.getRoomsForHotel(
+            val response = hotelApi.getRoomTypesAvailability(
                 hotelId,
+                checkIn.format(formatter),
+                checkOut.format(formatter)
+            )
+            if (response.isSuccessful) {
+                val roomTypes = response.body()?.map { rt ->
+                    RoomType(
+                        rt.id,
+                        hotelId,
+                        rt.roomName,
+                        rt.roomFacilities,
+                        rt.childCapacity,
+                        rt.adultCapacity,
+                        rt.basePrice,
+                        rt.imageUrls?.map { "http://10.0.2.2:8080$it" } ?: emptyList()
+                    )
+                } ?: emptyList()
+                Result.success(roomTypes)
+            } else {
+                Result.failure(Exception("Get room types failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getRoomsByRoomType(roomTypeId: UUID, checkIn: LocalDate, checkOut: LocalDate): Result<List<Room>> {
+        return try {
+            val response = hotelApi.getRoomsByRoomType(
+                roomTypeId,
                 checkIn.format(formatter),
                 checkOut.format(formatter)
             )
             if (response.isSuccessful) {
                 val rooms = response.body()?.map {
                     Room(
-                        it.id,
-                        it.hotelId,
-                        it.type,
-                        it.facilities,
-                        it.roomNumber,
-                        0, // Assuming available if returned by API
-                        null,
-                        it.maxAdults,
-                        it.price
+                        it.id ?: UUID.randomUUID(),
+                        it.roomTypeId ?: roomTypeId,
+                        it.roomNumber ?: 0,
+                        it.roomStatus ?: 0
                     )
                 } ?: emptyList()
                 Result.success(rooms)
