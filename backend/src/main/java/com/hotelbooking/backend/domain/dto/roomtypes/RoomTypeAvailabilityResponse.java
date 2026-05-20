@@ -23,6 +23,11 @@ public class RoomTypeAvailabilityResponse {
      */
     private Long availableRooms;
 
+	/**
+	 * IDs of rooms that are available for the requested date interval.
+	 */
+	private List<UUID> availableRoomIds;
+
     private List<String> imageUrls;
 }
 
