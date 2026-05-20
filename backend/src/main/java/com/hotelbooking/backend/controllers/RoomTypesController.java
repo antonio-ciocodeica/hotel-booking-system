@@ -33,7 +33,7 @@ public class RoomTypesController {
         return ResponseEntity.ok(roomTypeService.getRoomTypeById(roomTypeId));
     }
 
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     @PostMapping("/hotels/{hotelId}/room-types")
     public ResponseEntity<RoomTypeResponse> createRoomType(
             @PathVariable UUID hotelId,
@@ -54,7 +54,7 @@ public class RoomTypesController {
 
     @GetMapping("/room-types")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<List<RoomTypeEntity>> getAllRoomTypes() {
+    public ResponseEntity<List<RoomTypeResponse>> getAllRoomTypes() {
         return ResponseEntity.ok(roomTypeService.findAll());
     }
 

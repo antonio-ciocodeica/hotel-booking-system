@@ -17,5 +17,8 @@ public interface RoomTypeService {
     List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId);
 
     RoomTypeResponse getRoomTypeById(UUID roomTypeId);
+
+    List<RoomTypeResponse> findAll();
+
 }
 

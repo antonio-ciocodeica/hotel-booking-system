@@ -37,26 +37,20 @@ public class RoomServiceImpl implements RoomService {
 
         UUID staffHotelId = staff.getHotel() != null ? staff.getHotel().getId() : null;
         UUID roomTypeHotelId = roomType.getHotel() != null ? roomType.getHotel().getId() : null;
-        System.out.println("DEBUG: Staff email: " + staff.getEmail());
-        System.out.println("DEBUG: Staff hotel ID: " + (staff.getHotel() != null ? staff.getHotel().getId() : "NULL"));
-        System.out.println("DEBUG: RoomType hotel ID: " + roomTypeHotelId);
-        System.out.println("DEBUG: RoomType ID: " + roomTypeId);
-        System.out.println("DEBUG: RoomRequest: " + request);
 
         if (roomTypeHotelId == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Room type is not associated with any hotel");
         }
-        if (roomTypeHotelId == null) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Room type is not associated with any hotel");
+
+        if (staff.getRole() != 2 && staffHotelId != null && !staffHotelId.equals(roomTypeHotelId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Staff can only create rooms for their assigned hotel");
         }
 
-        if (staffHotelId != null && !staffHotelId.equals(roomTypeHotelId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create rooms for your hotel. Staff Hotel ID: " + staffHotelId + " RoomType Hotel ID: " + roomTypeHotelId);
+        // --- VERIFICAREA NOUĂ ȘI CORECTĂ ---
+        if (roomRepository.existsByRoomType_Hotel_IdAndRoomNumber(roomTypeHotelId, request.getRoomNumber())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room number " + request.getRoomNumber() + " already exists in this hotel!");
         }
-
-        if (roomRepository.existsByRoomType_IdAndRoomNumber(roomTypeId, request.getRoomNumber())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Room number already exists for this room type");
-        }
+        // -----------------------------------
 
         RoomEntity room = new RoomEntity();
         room.setRoomType(roomType);
@@ -64,8 +58,6 @@ public class RoomServiceImpl implements RoomService {
         room.setRoomStatus(request.getRoomStatus() == null ? 0 : request.getRoomStatus());
 
         RoomEntity saved = roomRepository.save(room);
-
-        System.out.println("DEBUG: RoomEntity saved id: " + saved.getId());
 
         return new RoomResponse(
                 saved.getId(),

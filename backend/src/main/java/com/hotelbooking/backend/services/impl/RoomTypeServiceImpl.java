@@ -38,15 +38,16 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     public RoomTypeResponse createRoomType(UUID hotelId, RoomTypeRequest request) {
         StaffEntity staff = getAuthenticatedStaffOrThrow();
 
-        if (staff.getHotel() != null && (staff.getHotel().getId() == null || !staff.getHotel().getId().equals(hotelId))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only create room types for your hotel");
+        if (staff.getRole() != 2 && staff.getHotel() != null && !staff.getHotel().getId().equals(hotelId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Staff can only create room types for their assigned hotel");
+        }
+
+        if (roomTypeRepository.existsByHotel_IdAndRoomNameIgnoreCase(hotelId, request.getRoomName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A room type with the name '" + request.getRoomName() + "' already exists in this hotel!");
         }
 
         HotelEntity hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new EntityNotFoundException("Hotel not found"));
-
-        System.out.println("DEBUG: Hotel ID: " + hotelId);
-        System.out.println("DEBUG: RoomTypeRequest: " + request);
 
         RoomTypeEntity entity = new RoomTypeEntity();
         entity.setHotel(hotel);
@@ -58,15 +59,12 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
         RoomTypeEntity saved = roomTypeRepository.save(entity);
 
-        System.out.println("DEBUG: RoomTypeEntity saved id: " + saved.getId());
-
         return toResponse(saved);
     }
 
     @Override
-    public List<RoomTypeResponse> findByHotelId(UUID hotelId) {
-        return roomTypeRepository.findByHotelId(hotelId)
-                .stream()
+    public List<RoomTypeResponse> findAll() {
+        return roomTypeRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -110,7 +108,6 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override
     public List<RoomTypeResponse> getRoomTypesByHotel(UUID hotelId) {
-        // Listing is allowed for authenticated users; hotel-scoping for STAFF is handled by the caller if needed.
         return roomTypeRepository.findAllByHotel_IdOrderByRoomNameAsc(hotelId)
                 .stream()
                 .map(this::toResponse)
