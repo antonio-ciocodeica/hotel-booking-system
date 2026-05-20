@@ -16,8 +16,6 @@ const Dashboard = () => {
     const [newHotel, setNewHotel] = useState({ name: '', location: '', facilities: '', description: '' });
     const [newRoomType, setNewRoomType] = useState({ hotelId: '', roomName: '', basePrice: '', childCapacity: '', adultCapacity: '', roomFacilities: '' });
     const [newRoom, setNewRoom] = useState({ roomTypeId: '', roomNumber: '' });
-
-    // State for images
     const [roomTypeImages, setRoomTypeImages] = useState(null);
 
     useEffect(() => {
@@ -66,7 +64,7 @@ const Dashboard = () => {
     };
 
     const handleAssignHotel = async (staffId, hotelId) => {
-        if(!hotelId) return;
+        if (!hotelId) return;
         await fetch(`http://127.0.0.1:8080/auth/staff/${staffId}/assign-hotel/${hotelId}`, {
             method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
@@ -75,37 +73,26 @@ const Dashboard = () => {
 
     const handleCreateHotel = async (e) => {
         e.preventDefault();
-        try {
-            const res = await fetch('http://127.0.0.1:8080/hotels', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify(newHotel)
-            });
-
-            if (res.ok) {
-                alert('Hotel created successfully!');
-                setShowHotelForm(false);
-                fetchAllHotels();
-                setNewHotel({ name: '', location: '', facilities: '', description: '' });
-            } else {
-                const errorData = await res.json();
-                console.error("Server error:", errorData);
-                alert('Failed to create hotel: ' + (errorData.message || 'Check console for details'));
-            }
-        } catch (err) {
-            console.error("Network error:", err);
-            alert("Network error. Check if backend is running.");
+        const res = await fetch('http://127.0.0.1:8080/hotels', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify(newHotel)
+        });
+        if (res.ok) {
+            alert('Hotel created!');
+            setShowHotelForm(false);
+            setNewHotel({ name: '', location: '', facilities: '', description: '' });
+            fetchAllHotels();
+        } else {
+            const err = await res.json();
+            alert('Error: ' + (err.message || 'Failed to create hotel'));
         }
     };
 
     const handleCreateRoomType = async (e) => {
         e.preventDefault();
         const finalHotelId = isAdmin ? newRoomType.hotelId : myHotelId;
-
-        if(!finalHotelId) return alert("Please select a hotel or ensure you are assigned to one!");
+        if (!finalHotelId) return alert("Please select a hotel or ensure you are assigned to one!");
 
         try {
             const res = await fetch(`http://127.0.0.1:8080/hotels/${finalHotelId}/room-types`, {
@@ -129,16 +116,12 @@ const Dashboard = () => {
                     for (let i = 0; i < roomTypeImages.length; i++) {
                         formData.append('files', roomTypeImages[i]);
                     }
-
                     const imgRes = await fetch(`http://127.0.0.1:8080/room-types/${newRoomTypeId}/images`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                         body: formData
                     });
-
-                    if (!imgRes.ok) {
-                        alert("Room Type created, but image upload failed!");
-                    }
+                    if (!imgRes.ok) alert("Room Type created, but image upload failed!");
                 }
 
                 alert('Room Type created successfully!');
@@ -152,13 +135,13 @@ const Dashboard = () => {
             }
         } catch (err) {
             console.error(err);
-            alert("A network error occurred.");
+            alert("A network error occurred while connecting to the server.");
         }
     };
 
     const handleCreateRoom = async (e) => {
         e.preventDefault();
-        if(!newRoom.roomTypeId) return alert("Please select a Room Type!");
+        if (!newRoom.roomTypeId) return alert("Please select a Room Type!");
 
         const res = await fetch(`http://127.0.0.1:8080/room-types/${newRoom.roomTypeId}/rooms`, {
             method: 'POST',
@@ -168,7 +151,7 @@ const Dashboard = () => {
 
         if (res.ok) {
             alert('Room added successfully!');
-            setNewRoom({...newRoom, roomNumber: ''});
+            setNewRoom({ ...newRoom, roomNumber: '' });
         } else {
             const errorData = await res.json();
             alert('Failed: ' + (errorData.message || 'Error creating room'));
@@ -179,7 +162,7 @@ const Dashboard = () => {
         <div style={styles.pageContainer}>
             <nav style={styles.navbar}>
                 <div style={styles.navBrand}>Luxury Stays {isAdmin ? 'Admin' : 'Staff'}</div>
-                <button onClick={() => {localStorage.clear(); navigate('/login');}} style={styles.logoutButton}>Logout</button>
+                <button onClick={() => { localStorage.clear(); navigate('/login'); }} style={styles.logoutButton}>Logout</button>
             </nav>
 
             <div style={styles.content}>
@@ -188,53 +171,12 @@ const Dashboard = () => {
 
                     {isAdmin && (
                         <>
-                            {/* HOTEL MANAGEMENT SECTION */}
-                            <div style={styles.adminSection}>
-                                <h2 style={styles.sectionTitle}>Hotel Management</h2>
-                                <button onClick={() => setShowHotelForm(!showHotelForm)} style={styles.submitButton}>
-                                    {showHotelForm ? 'Cancel' : 'Add New Hotel'}
-                                </button>
-                                {showHotelForm && (
-                                    <form onSubmit={handleCreateHotel} style={{...styles.hotelForm, marginTop: '15px'}}>
-                                        <input
-                                            style={styles.input}
-                                            placeholder="Hotel Name"
-                                            value={newHotel.name}
-                                            onChange={e => setNewHotel({...newHotel, name: e.target.value})}
-                                            required
-                                        />
-                                        <input
-                                            style={styles.input}
-                                            placeholder="Location"
-                                            value={newHotel.location}
-                                            onChange={e => setNewHotel({...newHotel, location: e.target.value})}
-                                            required
-                                        />
-                                        <input
-                                            style={styles.input}
-                                            placeholder="Facilities (e.g., Wi-Fi, Pool)"
-                                            value={newHotel.facilities}
-                                            onChange={e => setNewHotel({...newHotel, facilities: e.target.value})}
-                                            required
-                                        />
-                                        <input
-                                            style={styles.input}
-                                            placeholder="Description"
-                                            value={newHotel.description}
-                                            onChange={e => setNewHotel({...newHotel, description: e.target.value})}
-                                            required
-                                        />
-                                        <button type="submit" style={{...styles.submitButton, backgroundColor: '#28a745'}}>Save Hotel</button>
-                                    </form>
-                                )}
-                            </div>
-
                             <div style={styles.adminSection}>
                                 <h2 style={styles.sectionTitle}>Pending Approvals ({pendingStaff.length})</h2>
                                 {pendingStaff.map(s => (
                                     <div key={s.id} style={styles.listItem}>
                                         <span>{s.email}</span>
-                                        <button onClick={async()=>{await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/approve`, {method:'PUT', headers:{'Authorization': `Bearer ${localStorage.getItem('token')}`}}); fetchPendingStaff();}} style={styles.approveButton}>Approve</button>
+                                        <button onClick={async () => { await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/approve`, { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }); fetchPendingStaff(); }} style={styles.approveButton}>Approve</button>
                                     </div>
                                 ))}
                             </div>
@@ -255,36 +197,91 @@ const Dashboard = () => {
 
                     <div style={styles.adminSection}>
                         <h2 style={styles.sectionTitle}>Room Management</h2>
+
                         <form onSubmit={handleCreateRoomType} style={styles.hotelForm}>
                             {isAdmin ? (
-                                <select onChange={e => setNewRoomType({...newRoomType, hotelId: e.target.value})} style={styles.dropdownSelect} value={newRoomType.hotelId}>
+                                <select onChange={e => setNewRoomType({ ...newRoomType, hotelId: e.target.value })} style={styles.dropdownSelect} value={newRoomType.hotelId}>
                                     <option value="">Select Hotel</option>
                                     {allHotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                                 </select>
                             ) : (
-                                <div style={{...styles.input, backgroundColor: 'rgba(255,255,255,0.05)', color: '#ccc'}}>
+                                <div style={{ ...styles.input, backgroundColor: 'rgba(255,255,255,0.05)', color: '#ccc' }}>
                                     Assigned Hotel: {myHotelId ? (allHotels.find(h => h.id === myHotelId)?.name || 'Loading...') : 'No hotel assigned'}
                                 </div>
                             )}
-                            <input style={styles.input} placeholder="Room Name" value={newRoomType.roomName} onChange={e => setNewRoomType({...newRoomType, roomName: e.target.value})} required/>
-                            <input style={styles.input} placeholder="Price" type="number" value={newRoomType.basePrice} onChange={e => setNewRoomType({...newRoomType, basePrice: e.target.value})} required/>
-                            <input style={styles.input} placeholder="Adult Cap" type="number" value={newRoomType.adultCapacity} onChange={e => setNewRoomType({...newRoomType, adultCapacity: e.target.value})} required/>
-                            <input style={styles.input} placeholder="Child Cap" type="number" value={newRoomType.childCapacity} onChange={e => setNewRoomType({...newRoomType, childCapacity: e.target.value})} required/>
-                            <input style={styles.input} placeholder="Facilities" value={newRoomType.roomFacilities} onChange={e => setNewRoomType({...newRoomType, roomFacilities: e.target.value})} required/>
-                            <input id="image-upload-input" type="file" multiple accept="image/*" style={{...styles.input, padding: '10px'}} onChange={e => setRoomTypeImages(e.target.files)}/>
+                            <input style={styles.input} placeholder="Room Name (e.g., Deluxe)" value={newRoomType.roomName} onChange={e => setNewRoomType({ ...newRoomType, roomName: e.target.value })} required />
+                            <input style={styles.input} placeholder="Price" type="number" value={newRoomType.basePrice} onChange={e => setNewRoomType({ ...newRoomType, basePrice: e.target.value })} required />
+                            <input style={styles.input} placeholder="Adult Capacity" type="number" value={newRoomType.adultCapacity} onChange={e => setNewRoomType({ ...newRoomType, adultCapacity: e.target.value })} required />
+                            <input style={styles.input} placeholder="Child Capacity" type="number" value={newRoomType.childCapacity} onChange={e => setNewRoomType({ ...newRoomType, childCapacity: e.target.value })} required />
+                            <input style={styles.input} placeholder="Facilities" value={newRoomType.roomFacilities} onChange={e => setNewRoomType({ ...newRoomType, roomFacilities: e.target.value })} required />
+                            <label style={{ color: 'white', fontSize: '14px', marginTop: '5px', marginBottom: '-5px' }}>Upload Images (Optional)</label>
+                            <input id="image-upload-input" type="file" multiple accept="image/*" style={{ ...styles.input, padding: '10px' }} onChange={e => setRoomTypeImages(e.target.files)} />
                             <button type="submit" style={styles.submitButton}>Create Room Type</button>
                         </form>
 
-                        <form onSubmit={handleCreateRoom} style={{...styles.hotelForm, marginTop: '20px'}}>
-                            <select onChange={e => setNewRoom({...newRoom, roomTypeId: e.target.value})} style={styles.dropdownSelect} value={newRoom.roomTypeId} required>
+                        <form onSubmit={handleCreateRoom} style={{ ...styles.hotelForm, marginTop: '20px' }}>
+                            <select onChange={e => setNewRoom({ ...newRoom, roomTypeId: e.target.value })} style={styles.dropdownSelect} value={newRoom.roomTypeId} required>
                                 <option value="">Select Room Type</option>
-                                {allRoomTypes.filter(rt => isAdmin ? true : rt.hotelId === myHotelId).map(rt => (
-                                    <option key={rt.id} value={rt.id}>{rt.roomName} ({allHotels.find(h => h.id === rt.hotelId)?.name || 'Unknown'})</option>
-                                ))}
+                                {allRoomTypes
+                                    .filter(rt => isAdmin ? true : rt.hotelId === myHotelId)
+                                    .map(rt => (
+                                        <option key={rt.id} value={rt.id}>
+                                            {rt.roomName} ({allHotels.find(h => h.id === rt.hotelId)?.name || 'Unknown'})
+                                        </option>
+                                    ))}
                             </select>
-                            <input style={styles.input} placeholder="Room Number" type="number" value={newRoom.roomNumber} onChange={e => setNewRoom({...newRoom, roomNumber: e.target.value})} required/>
+                            <input style={styles.input} placeholder="Room Number (e.g., 101)" type="number" value={newRoom.roomNumber} onChange={e => setNewRoom({ ...newRoom, roomNumber: e.target.value })} required />
                             <button type="submit" style={styles.submitButton}>Add Room</button>
                         </form>
+
+                        {isAdmin && (
+                            <div style={{ marginTop: '20px' }}>
+                                <button onClick={() => setShowHotelForm(!showHotelForm)} style={styles.toggleFormButton}>
+                                    {showHotelForm ? 'Close' : '+ Add New Hotel'}
+                                </button>
+                                {showHotelForm && (
+                                    <form onSubmit={handleCreateHotel} style={styles.hotelForm}>
+                                        <input style={styles.input} placeholder="Name" value={newHotel.name} onChange={e => setNewHotel({ ...newHotel, name: e.target.value })} required />
+                                        <input style={styles.input} placeholder="Location" value={newHotel.location} onChange={e => setNewHotel({ ...newHotel, location: e.target.value })} required />
+                                        <input style={styles.input} placeholder="Facilities" value={newHotel.facilities} onChange={e => setNewHotel({ ...newHotel, facilities: e.target.value })} />
+                                        <textarea style={styles.input} placeholder="Description" value={newHotel.description} onChange={e => setNewHotel({ ...newHotel, description: e.target.value })} />
+                                        <button type="submit" style={styles.submitButton}>Save Hotel</button>
+                                    </form>
+                                )}
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: '30px', borderTop: '1px solid rgba(255,255,255,0.2)', paddingTop: '20px' }}>
+                            <h3 style={{ color: 'white', marginBottom: '15px' }}>Created Room Types & Images</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                {allRoomTypes
+                                    .filter(rt => isAdmin ? true : rt.hotelId === myHotelId)
+                                    .map(rt => (
+                                        <div key={rt.id} style={{ backgroundColor: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div style={{ color: 'white', fontWeight: 'bold', marginBottom: '10px', fontSize: '16px' }}>
+                                                {rt.roomName} - {rt.basePrice} RON
+                                                <span style={{ fontSize: '12px', fontWeight: 'normal', color: '#aaa', marginLeft: '10px' }}>
+                                                    (Hotel: {allHotels.find(h => h.id === rt.hotelId)?.name})
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                                {rt.imageUrls && rt.imageUrls.length > 0 ? (
+                                                    rt.imageUrls.map((url, idx) => (
+                                                        <img
+                                                            key={idx}
+                                                            src={`http://127.0.0.1:8080${url}`}
+                                                            alt={`${rt.roomName} view`}
+                                                            style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.3)' }}
+                                                        />
+                                                    ))
+                                                ) : (
+                                                    <span style={{ color: '#888', fontSize: '13px', fontStyle: 'italic' }}>No images uploaded.</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -307,7 +304,8 @@ const styles = {
     hotelForm: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' },
     input: { padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(0,0,0,0.4)', color: 'white', width: '100%', boxSizing: 'border-box' },
     dropdownSelect: { padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: '#1a2a3a', color: 'white', cursor: 'pointer', width: '100%' },
-    submitButton: { padding: '12px', backgroundColor: '#00509e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }
+    submitButton: { padding: '12px', backgroundColor: '#00509e', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' },
+    toggleFormButton: { padding: '8px 16px', backgroundColor: '#444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginBottom: '10px' }
 };
 
 export default Dashboard;
