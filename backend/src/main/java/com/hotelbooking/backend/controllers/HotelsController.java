@@ -7,8 +7,10 @@ import com.hotelbooking.backend.domain.dto.roomtypes.RoomTypeAvailabilityRespons
 import com.hotelbooking.backend.domain.entities.HotelEntity;
 import com.hotelbooking.backend.domain.entities.RoomTypeImageEntity;
 import com.hotelbooking.backend.repositories.HotelRepository;
+import com.hotelbooking.backend.repositories.RoomRepository;
 import com.hotelbooking.backend.repositories.RoomTypeImageRepository;
 import com.hotelbooking.backend.repositories.RoomTypeRepository;
+import com.hotelbooking.backend.repositories.projections.AvailableRoomIdProjection;
 import com.hotelbooking.backend.repositories.projections.RoomTypeAvailabilityProjection;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:5174"})
@@ -32,6 +36,7 @@ public class HotelsController {
 	private final HotelRepository hotelRepository;
 	private final RoomTypeRepository roomTypeRepository;
 	private final RoomTypeImageRepository roomTypeImageRepository;
+	private final RoomRepository roomRepository;
 
 	private static final List<Integer> ACTIVE_BOOKING_STATUSES = List.of(0, 1);
 
@@ -123,7 +128,16 @@ public class HotelsController {
 		List<RoomTypeAvailabilityProjection> rows = roomTypeRepository
 				.findRoomTypeAvailabilityByHotel(hotelId, in, out, ACTIVE_BOOKING_STATUSES);
 
+		Map<UUID, List<UUID>> availableRoomIdsByRoomType = roomRepository
+				.findAvailableRoomIdsByHotelAndDateRange(hotelId, in, out, ACTIVE_BOOKING_STATUSES)
+				.stream()
+				.collect(Collectors.groupingBy(
+						AvailableRoomIdProjection::getRoomTypeId,
+						Collectors.mapping(AvailableRoomIdProjection::getRoomId, Collectors.toList())
+				));
+
 		List<RoomTypeAvailabilityResponse> responses = rows.stream().map(row -> {
+			List<UUID> availableRoomIds = availableRoomIdsByRoomType.getOrDefault(row.getRoomTypeId(), List.of());
 			List<String> urls = roomTypeImageRepository
 					.findAllByRoomType_IdOrderBySortOrderAsc(row.getRoomTypeId())
 					.stream()
@@ -137,7 +151,8 @@ public class HotelsController {
 					row.getChildCapacity(),
 					row.getAdultCapacity(),
 					row.getBasePrice(),
-					row.getAvailableRooms(),
+					(long) availableRoomIds.size(),
+					availableRoomIds,
 					urls
 			);
 		}).toList();
