@@ -1,7 +1,6 @@
 package com.hotelbooking.mobile.data.api
 
-import com.hotelbooking.mobile.data.api.HotelResponse
-import com.hotelbooking.mobile.data.api.RoomResponse
+import com.google.gson.annotations.SerializedName
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -17,13 +16,31 @@ interface HotelApi {
         @Query("checkOut") checkOut: String
     ): Response<List<HotelResponse>>
 
-    @GET("hotels/{id}/rooms")
-    suspend fun getRoomsForHotel(
+    @GET("hotels/{id}/availability")
+    suspend fun getRoomTypesAvailability(
         @Path("id") hotelId: UUID,
+        @Query("checkIn") checkIn: String,
+        @Query("checkOut") checkOut: String
+    ): Response<List<RoomTypeResponse>>
+
+    @GET("room-types/{id}/rooms")
+    suspend fun getRoomsByRoomType(
+        @Path("id") roomTypeId: UUID,
         @Query("checkIn") checkIn: String,
         @Query("checkOut") checkOut: String
     ): Response<List<RoomResponse>>
 }
+
+data class RoomTypeResponse(
+    @SerializedName("roomTypeId")
+    val id: UUID,
+    val roomName: String,
+    val roomFacilities: String?,
+    val childCapacity: Int?,
+    val adultCapacity: Int?,
+    val basePrice: Double,
+    val imageUrls: List<String>? = null
+)
 
 data class HotelResponse(
     val id: UUID,
@@ -34,13 +51,8 @@ data class HotelResponse(
 )
 
 data class RoomResponse(
-    val id: UUID,
-    val hotelId: UUID,
-    val type: String,
-    val facilities: String?,
-    val roomNumber: Int,
-    val floor: Int,
-    val balcony: Int,
-    val maxAdults: Int,
-    val price: Double
+    val id: UUID?,
+    val roomTypeId: UUID?,
+    val roomNumber: Int?,
+    val roomStatus: Int?
 )

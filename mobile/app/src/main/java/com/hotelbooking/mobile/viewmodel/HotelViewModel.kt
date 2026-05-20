@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hotelbooking.mobile.domain.model.Hotel
 import com.hotelbooking.mobile.domain.model.Room
+import com.hotelbooking.mobile.domain.model.RoomType
 import com.hotelbooking.mobile.domain.repository.HotelRepository
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -15,6 +16,7 @@ import java.util.UUID
 class HotelViewModel(private val repository: HotelRepository) : ViewModel() {
 
     var hotels by mutableStateOf<List<Hotel>>(emptyList())
+    var roomTypes by mutableStateOf<List<RoomType>>(emptyList())
     var rooms by mutableStateOf<List<Room>>(emptyList())
     var isLoading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
@@ -43,10 +45,24 @@ class HotelViewModel(private val repository: HotelRepository) : ViewModel() {
         }
     }
 
-    fun loadRooms(hotelId: UUID) {
+    fun loadRoomTypes(hotelId: UUID) {
         viewModelScope.launch {
             isLoading = true
-            val result = repository.getRoomsForHotel(hotelId, checkInDate, checkOutDate)
+            val result = repository.getRoomTypesAvailability(hotelId, checkInDate, checkOutDate)
+            isLoading = false
+            result.onSuccess {
+                roomTypes = it
+                error = null
+            }.onFailure {
+                error = it.message
+            }
+        }
+    }
+
+    fun loadRooms(roomTypeId: UUID) {
+        viewModelScope.launch {
+            isLoading = true
+            val result = repository.getRoomsByRoomType(roomTypeId, checkInDate, checkOutDate)
             isLoading = false
             result.onSuccess {
                 rooms = it

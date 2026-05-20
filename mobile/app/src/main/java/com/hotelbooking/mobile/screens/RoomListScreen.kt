@@ -17,32 +17,54 @@ import java.util.UUID
 @Composable
 fun RoomListScreen(
     hotelId: UUID,
+    roomTypeId: UUID,
     viewModel: HotelViewModel,
     onRoomClick: (UUID) -> Unit,
     onBack: () -> Unit
 ) {
-    LaunchedEffect(hotelId) {
-        viewModel.loadRooms(hotelId)
+    val roomType = viewModel.roomTypes.find { it.id == roomTypeId }
+
+    LaunchedEffect(roomTypeId) {
+        viewModel.loadRooms(roomTypeId)
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Camere disponibile") },
+                title = { Text("Camere: ${roomType?.roomName ?: ""}") },
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text("Înapoi") }
                 }
             )
         }
     ) { padding ->
-        if (viewModel.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                CircularProgressIndicator()
+        Column(modifier = Modifier.padding(padding)) {
+            viewModel.error?.let {
+                Text(
+                    text = "Eroare: $it",
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
-        } else {
-            LazyColumn(modifier = Modifier.padding(padding)) {
-                items(viewModel.rooms) { room ->
-                    RoomItem(room = room, onClick = { onRoomClick(room.id) })
+
+            if (viewModel.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else if (viewModel.rooms.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    Text("Nu sunt camere disponibile pentru acest tip.")
+                }
+            } else {
+                LazyColumn {
+                    items(viewModel.rooms) { room ->
+                        RoomItem(
+                            room = room,
+                            roomTypeName = roomType?.roomName ?: "Cameră",
+                            price = roomType?.basePrice ?: 0.0,
+                            onClick = { onRoomClick(room.id) }
+                        )
+                    }
                 }
             }
         }
@@ -50,7 +72,7 @@ fun RoomListScreen(
 }
 
 @Composable
-fun RoomItem(room: Room, onClick: () -> Unit) {
+fun RoomItem(room: Room, roomTypeName: String, price: Double, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -59,17 +81,20 @@ fun RoomItem(room: Room, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(room.roomName, style = MaterialTheme.typography.headlineSmall)
-            Text("Număr camera: ${room.roomNumber}", style = MaterialTheme.typography.bodyMedium)
-            Text("Capacitate: ${room.adultCapacity ?: 0} Adulți, ${room.childCapacity ?: 0} Copii", style = MaterialTheme.typography.bodySmall)
-            Text("Preț de bază: ${room.basePrice} EUR", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
-            room.roomFacilities?.let {
-                Text("Facilități: $it", style = MaterialTheme.typography.bodySmall)
+            Text("Camera ${room.roomNumber}", style = MaterialTheme.typography.headlineSmall)
+            Text("Tip: $roomTypeName", style = MaterialTheme.typography.bodyMedium)
+            Text("Status: ${if (room.status == 0) "Disponibilă" else "Ocupată"}", 
+                color = if (room.status == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+            Text("Preț: $price EUR", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = onClick, 
+                modifier = Modifier.fillMaxWidth(),
+                enabled = room.status == 0
+            ) {
+                Text(if (room.status == 0) "Rezervă" else "Indisponibilă")
             }
-            Text(
-                if (room.status == 0) "Disponibilă" else "Indisponibilă",
-                color = if (room.status == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
         }
     }
 }
