@@ -39,6 +39,8 @@ data class RoomTypeResponse(
     val childCapacity: Int?,
     val adultCapacity: Int?,
     val basePrice: Double,
+    val availableCount: Long,
+    val availableRoomIds: List<UUID>?,
     val imageUrls: List<String>? = null
 )
 

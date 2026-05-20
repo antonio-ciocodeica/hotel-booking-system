@@ -14,7 +14,7 @@ sealed class Screen {
     object MyBookings : Screen()
     data class RoomTypeList(val hotelId: UUID) : Screen()
     data class RoomList(val hotelId: UUID, val roomTypeId: UUID) : Screen()
-    data class Booking(val roomId: UUID) : Screen()
+    data class Booking(val roomId: UUID, val roomTypeId: UUID) : Screen()
 }
 
 @Composable
@@ -67,7 +67,10 @@ fun AppNavigation() {
         )
         is Screen.MyBookings -> MyBookingsScreen(
             viewModel = bookingViewModel,
-            onBack = { currentScreen = Screen.Search }
+            onBack = { 
+                hotelViewModel.refreshSearch()
+                currentScreen = Screen.Search 
+            }
         )
         is Screen.RoomTypeList -> RoomTypeListScreen(
             hotelId = screen.hotelId,
@@ -81,7 +84,7 @@ fun AppNavigation() {
             viewModel = hotelViewModel,
             onRoomClick = { roomId ->
                 if (ServiceLocator.authRepository.isLoggedIn()) {
-                    currentScreen = Screen.Booking(roomId)
+                    currentScreen = Screen.Booking(roomId, screen.roomTypeId)
                 } else {
                     currentScreen = Screen.Login
                 }
@@ -90,11 +93,15 @@ fun AppNavigation() {
         )
         is Screen.Booking -> BookingScreen(
             roomId = screen.roomId,
+            roomType = hotelViewModel.roomTypes.find { it.id == screen.roomTypeId },
             initialCheckIn = hotelViewModel.checkInDate,
             initialCheckOut = hotelViewModel.checkOutDate,
             viewModel = bookingViewModel,
-            onBookingSuccess = { currentScreen = Screen.MyBookings },
-            onBack = { currentScreen = Screen.HotelList } // Or back to room list if we had the IDs
+            onBookingSuccess = { 
+                hotelViewModel.clearRooms()
+                currentScreen = Screen.MyBookings 
+            },
+            onBack = { currentScreen = Screen.HotelList }
         )
     }
 }

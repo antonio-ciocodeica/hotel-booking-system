@@ -15,6 +15,7 @@ import java.util.UUID
 @Composable
 fun BookingScreen(
     roomId: UUID,
+    roomType: com.hotelbooking.mobile.domain.model.RoomType?,
     initialCheckIn: LocalDate,
     initialCheckOut: LocalDate,
     viewModel: BookingViewModel,
@@ -23,6 +24,9 @@ fun BookingScreen(
 ) {
     var checkIn by remember { mutableStateOf(initialCheckIn.toString()) }
     var checkOut by remember { mutableStateOf(initialCheckOut.toString()) }
+
+    val nights = java.time.temporal.ChronoUnit.DAYS.between(initialCheckIn, initialCheckOut)
+    val totalPrice = (roomType?.basePrice ?: 0.0) * nights
 
     Scaffold(
         topBar = {
@@ -45,8 +49,12 @@ fun BookingScreen(
             Text("Detalii Rezervare", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(24.dp))
 
+            Text("Tip Cameră: ${roomType?.roomName ?: "Cameră"}", style = MaterialTheme.typography.titleMedium)
             Text("Perioada selectată:", style = MaterialTheme.typography.titleMedium)
-            Text("$checkIn -> $checkOut", style = MaterialTheme.typography.bodyLarge)
+            Text("$checkIn -> $checkOut ($nights nopți)", style = MaterialTheme.typography.bodyLarge)
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Preț total estimat: $totalPrice EUR", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.primary)
 
             Spacer(modifier = Modifier.height(24.dp))
 
