@@ -7,7 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface RoomRepository extends JpaRepository<RoomEntity, UUID> {
-	boolean existsByRoomType_IdAndRoomNumber(UUID roomTypeId, Integer roomNumber);
 
 	List<RoomEntity> findAllByRoomType_IdOrderByRoomNumberAsc(UUID roomTypeId);
+
+	boolean existsByRoomType_IdAndRoomNumber(UUID roomTypeId, Integer roomNumber);
+
+	boolean existsByRoomType_Hotel_IdAndRoomNumber(UUID hotelId, Integer roomNumber);
 }

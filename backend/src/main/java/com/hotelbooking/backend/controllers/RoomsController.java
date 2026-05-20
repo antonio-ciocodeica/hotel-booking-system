@@ -34,7 +34,7 @@ public class RoomsController {
      * Create a room under a room type.
      * Managers can only create rooms for room types that belong to their hotel.
      */
-    @PreAuthorize("hasRole('MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
     @PostMapping("/room-types/{roomTypeId}/rooms")
     public ResponseEntity<RoomResponse> createRoom(
             @PathVariable UUID roomTypeId,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; 
+import { useNavigate, Link } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -38,6 +38,15 @@ const Login = () => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('role', data.role);
+        localStorage.setItem('userEmail', email);
+
+        // --- NOU: Salvăm hotelul ---
+        if (data.hotelId) {
+          localStorage.setItem('hotelId', data.hotelId);
+        } else {
+          localStorage.removeItem('hotelId'); // Ștergem dacă nu are hotel
+        }
+
         navigate('/dashboard');
       } else {
         setError('Failed to generate token.');
@@ -83,7 +92,6 @@ const Login = () => {
 
               <button type="submit" style={styles.button}>Sign In</button>
 
-              {/* NOU: Link către Register */}
               <div style={styles.footerText}>
                 Don't have an account? <Link to="/register" style={{color: '#66b2ff', textDecoration: 'none', fontWeight: 'bold'}}>Register here</Link>
               </div>
@@ -108,7 +116,7 @@ const styles = {
   input: { width: '100%', padding: '14px', backgroundColor: 'rgba(0, 0, 0, 0.3)', border: '1px solid rgba(255, 255, 255, 0.3)', color: 'white', borderRadius: '8px', boxSizing: 'border-box', fontSize: '15px', outline: 'none' },
   button: { padding: '16px', fontSize: '16px', fontWeight: 'bold', letterSpacing: '1px', background: 'linear-gradient(to right, #003580, #00509e)', color: 'white', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', cursor: 'pointer', marginTop: '15px', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)' },
   errorBox: { backgroundColor: 'rgba(255, 50, 50, 0.2)', color: 'white', padding: '12px', borderRadius: '6px', marginBottom: '15px', textAlign: 'center', fontSize: '14px', border: '1px solid rgba(255, 107, 107, 0.5)' },
-  footerText: { textAlign: 'center', marginTop: '20px', fontSize: '14px', color: 'white', opacity: 0.9 } // NOU: Stilizarea pentru link
+  footerText: { textAlign: 'center', marginTop: '20px', fontSize: '14px', color: 'white', opacity: 0.9 }
 };
 
 export default Login;

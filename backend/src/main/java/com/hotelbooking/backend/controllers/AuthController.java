@@ -95,10 +95,15 @@
 
             String token = authenticationService.generateToken(userDetails);
 
-
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
             response.put("role", staff.getRole());
+
+            if (staff.getHotel() != null) {
+                response.put("hotelId", staff.getHotel().getId());
+            } else {
+                response.put("hotelId", null);
+            }
 
             return ResponseEntity.ok(response);
         }

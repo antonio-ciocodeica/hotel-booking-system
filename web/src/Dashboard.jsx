@@ -12,16 +12,45 @@ const Dashboard = () => {
     const [allRoomTypes, setAllRoomTypes] = useState([]);
     const [showHotelForm, setShowHotelForm] = useState(false);
 
+    // --- NOU: Luăm hotelul direct din memorie! Simplu și eficient! ---
+    const [myHotelId, setMyHotelId] = useState(localStorage.getItem('hotelId') || null);
+
     const [newHotel, setNewHotel] = useState({ name: '', location: '', facilities: '', description: '' });
     const [newRoomType, setNewRoomType] = useState({ hotelId: '', roomName: '', basePrice: '', childCapacity: '', adultCapacity: '', roomFacilities: '' });
     const [newRoom, setNewRoom] = useState({ roomTypeId: '', roomNumber: '' });
 
     useEffect(() => {
         fetchAllHotels();
-        fetchAllStaff();
         fetchAllRoomTypes();
-        if (isAdmin) fetchPendingStaff();
+        // AICI ESTE SECRETUL: Staff-ul obișnuit nu mai apelează funcțiile astea!
+        if (isAdmin) {
+            fetchAllStaff();
+            fetchPendingStaff();
+        }
     }, [isAdmin]);
+
+    useEffect(() => {
+        if (!isAdmin) {
+            console.log("Toți angajații descărcați:", allStaff); // Vezi asta în F12
+
+            const email = localStorage.getItem('userEmail');
+            if (email && allStaff.length > 0) {
+                const me = allStaff.find(s => s.email?.toLowerCase() === email?.toLowerCase());
+                console.log("Datele mele găsite în React:", me); // Vezi asta în F12
+
+                if (me) {
+                    // Verificăm ambele variante posibile din backend (și Entitate și DTO)
+                    if (me.hotel && me.hotel.id) {
+                        setMyHotelId(me.hotel.id);
+                    } else if (me.hotelId) {
+                        setMyHotelId(me.hotelId);
+                    } else {
+                        console.error("Angajatul a fost găsit, dar backend-ul nu a trimis ID-ul hotelului!");
+                    }
+                }
+            }
+        }
+    }, [allStaff, isAdmin]);
 
     const fetchAllHotels = async () => {
         const res = await fetch('http://127.0.0.1:8080/hotels', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
@@ -58,13 +87,21 @@ const Dashboard = () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify(newHotel)
         });
-        if (res.ok) { alert('Hotel created!'); setShowHotelForm(false); fetchAllHotels(); }
+        if (res.ok) {
+            alert('Hotel created!');
+            setShowHotelForm(false);
+            fetchAllHotels();
+            setNewHotel({ name: '', location: '', facilities: '', description: '' });
+        }
     };
 
     const handleCreateRoomType = async (e) => {
         e.preventDefault();
-        if(!newRoomType.hotelId) return alert("Select a hotel!");
-        const res = await fetch(`http://127.0.0.1:8080/hotels/${newRoomType.hotelId}/room-types`, {
+        const finalHotelId = isAdmin ? newRoomType.hotelId : myHotelId;
+
+        if(!finalHotelId) return alert("Select a hotel or ensure you are assigned to one!");
+
+        const res = await fetch(`http://127.0.0.1:8080/hotels/${finalHotelId}/room-types`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({
@@ -75,20 +112,36 @@ const Dashboard = () => {
                 roomFacilities: newRoomType.roomFacilities
             })
         });
-        if (res.ok) { alert('Room Type created!'); fetchAllRoomTypes(); }
-        else alert('Error: ' + await res.text());
+
+        if (res.ok) {
+            alert('Room Type created successfully!');
+            fetchAllRoomTypes();
+            // Golește formularul
+            setNewRoomType({ hotelId: isAdmin ? newRoomType.hotelId : '', roomName: '', basePrice: '', childCapacity: '', adultCapacity: '', roomFacilities: '' });
+        } else {
+            const errorData = await res.json();
+            alert('Failed: ' + (errorData.message || 'Error creating room type'));
+        }
     };
 
     const handleCreateRoom = async (e) => {
         e.preventDefault();
         if(!newRoom.roomTypeId) return alert("Select a Room Type!");
+
         const res = await fetch(`http://127.0.0.1:8080/room-types/${newRoom.roomTypeId}/rooms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({ roomNumber: parseInt(newRoom.roomNumber), roomStatus: 0 })
         });
-        if (res.ok) { alert('Room added successfully!'); setNewRoom({roomTypeId: '', roomNumber: ''}); }
-        else alert('Error: ' + await res.text());
+
+        if (res.ok) {
+            alert('Room added successfully!');
+            // Golește numărul camerei, dar păstrează tipul selectat pentru a adăuga mai multe camere din același tip
+            setNewRoom({...newRoom, roomNumber: ''});
+        } else {
+            const errorData = await res.json();
+            alert('Failed: ' + (errorData.message || 'Error creating room'));
+        }
     };
 
     return (
@@ -130,29 +183,43 @@ const Dashboard = () => {
 
                     <div style={styles.adminSection}>
                         <h2 style={styles.sectionTitle}>Room Management</h2>
+
+                        {/* FORMULAR: Create Room Type */}
                         <form onSubmit={handleCreateRoomType} style={styles.hotelForm}>
-                            <select onChange={e => setNewRoomType({...newRoomType, hotelId: e.target.value})} style={styles.dropdownSelect}>
-                                <option value="">Select Hotel</option>
-                                {allHotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-                            </select>
-                            <input style={styles.input} placeholder="Room Name" onChange={e => setNewRoomType({...newRoomType, roomName: e.target.value})} />
-                            <input style={styles.input} placeholder="Price" type="number" onChange={e => setNewRoomType({...newRoomType, basePrice: e.target.value})} />
-                            <input style={styles.input} placeholder="Adult Cap" type="number" onChange={e => setNewRoomType({...newRoomType, adultCapacity: e.target.value})} />
-                            <input style={styles.input} placeholder="Child Cap" type="number" onChange={e => setNewRoomType({...newRoomType, childCapacity: e.target.value})} />
-                            <input style={styles.input} placeholder="Facilities" onChange={e => setNewRoomType({...newRoomType, roomFacilities: e.target.value})} />
+                            {isAdmin ? (
+                                <select onChange={e => setNewRoomType({...newRoomType, hotelId: e.target.value})} style={styles.dropdownSelect} value={newRoomType.hotelId}>
+                                    <option value="">Select Hotel</option>
+                                    {allHotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                                </select>
+                            ) : (
+                                <div style={{...styles.input, backgroundColor: 'rgba(255,255,255,0.05)', color: '#ccc'}}>
+                                    Hotel Alocat: {myHotelId ? (allHotels.find(h => h.id === myHotelId)?.name || 'Încărcare date hotel...') : 'Niciun hotel alocat contului tău'}
+                                </div>
+                            )}
+                            <input style={styles.input} placeholder="Room Name (e.g., Deluxe)" value={newRoomType.roomName} onChange={e => setNewRoomType({...newRoomType, roomName: e.target.value})} required/>
+                            <input style={styles.input} placeholder="Price" type="number" value={newRoomType.basePrice} onChange={e => setNewRoomType({...newRoomType, basePrice: e.target.value})} required/>
+                            <input style={styles.input} placeholder="Adult Cap" type="number" value={newRoomType.adultCapacity} onChange={e => setNewRoomType({...newRoomType, adultCapacity: e.target.value})} required/>
+                            <input style={styles.input} placeholder="Child Cap" type="number" value={newRoomType.childCapacity} onChange={e => setNewRoomType({...newRoomType, childCapacity: e.target.value})} required/>
+                            <input style={styles.input} placeholder="Facilities" value={newRoomType.roomFacilities} onChange={e => setNewRoomType({...newRoomType, roomFacilities: e.target.value})} required/>
                             <button type="submit" style={styles.submitButton}>Create Room Type</button>
                         </form>
 
+                        {/* FORMULAR: Add Room */}
                         <form onSubmit={handleCreateRoom} style={{...styles.hotelForm, marginTop: '20px'}}>
-                            <select onChange={e => setNewRoom({...newRoom, roomTypeId: e.target.value})} style={styles.dropdownSelect}>
+                            <select onChange={e => setNewRoom({...newRoom, roomTypeId: e.target.value})} style={styles.dropdownSelect} value={newRoom.roomTypeId} required>
                                 <option value="">Select Room Type</option>
-                                {allRoomTypes.map(rt => (
-                                    <option key={rt.id} value={rt.id}>{rt.roomName} ({allHotels.find(h => h.id === rt.hotelId)?.name})</option>
-                                ))}
+                                {allRoomTypes
+                                    .filter(rt => isAdmin ? true : rt.hotelId === myHotelId)
+                                    .map(rt => (
+                                        <option key={rt.id} value={rt.id}>
+                                            {rt.roomName} ({allHotels.find(h => h.id === rt.hotelId)?.name || 'Unknown'})
+                                        </option>
+                                    ))}
                             </select>
-                            <input style={styles.input} placeholder="Room Number" type="number" onChange={e => setNewRoom({...newRoom, roomNumber: e.target.value})} />
+                            <input style={styles.input} placeholder="Room Number (e.g., 101)" type="number" value={newRoom.roomNumber} onChange={e => setNewRoom({...newRoom, roomNumber: e.target.value})} required/>
                             <button type="submit" style={styles.submitButton}>Add Room</button>
                         </form>
+
                     </div>
                 </div>
             </div>
