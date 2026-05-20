@@ -14,6 +14,7 @@ class HotelRepositoryImpl(
 ) : HotelRepository {
 
     private val formatter = DateTimeFormatter.ISO_LOCAL_DATE
+    private val availableRoomsCache = mutableMapOf<UUID, List<UUID>>()
 
     override suspend fun searchHotels(location: String, checkIn: LocalDate, checkOut: LocalDate): Result<List<Hotel>> {
         return try {
@@ -43,7 +44,14 @@ class HotelRepositoryImpl(
                 checkOut.format(formatter)
             )
             if (response.isSuccessful) {
-                val roomTypes = response.body()?.map { rt ->
+                val body = response.body() ?: emptyList()
+                
+                // Salvăm ID-urile camerelor disponibile pentru a le folosi ulterior în getRoomsByRoomType
+                body.forEach { rt ->
+                    availableRoomsCache[rt.id] = rt.availableRoomIds ?: emptyList()
+                }
+
+                val roomTypes = body.map { rt ->
                     RoomType(
                         rt.id,
                         hotelId,
@@ -54,7 +62,7 @@ class HotelRepositoryImpl(
                         rt.basePrice,
                         rt.imageUrls?.map { "http://10.0.2.2:8080$it" } ?: emptyList()
                     )
-                } ?: emptyList()
+                }
                 Result.success(roomTypes)
             } else {
                 Result.failure(Exception("Get room types failed: ${response.code()}"))
@@ -72,12 +80,18 @@ class HotelRepositoryImpl(
                 checkOut.format(formatter)
             )
             if (response.isSuccessful) {
+                // Nu mai folosim statusul "mocked", ci verificăm în lista de ID-uri disponibile primită anterior de la backend
+                val availableIds = availableRoomsCache[roomTypeId] ?: emptyList()
+                
                 val rooms = response.body()?.map {
+                    val roomId = it.id ?: UUID.randomUUID()
+                    val isAvailable = availableIds.contains(roomId)
+                    
                     Room(
-                        it.id ?: UUID.randomUUID(),
+                        roomId,
                         it.roomTypeId ?: roomTypeId,
                         it.roomNumber ?: 0,
-                        it.roomStatus ?: 0
+                        if (isAvailable) 0 else 1 // 0 = disponibil, 1 = ocupat
                     )
                 } ?: emptyList()
                 Result.success(rooms)

@@ -30,10 +30,14 @@ class HotelViewModel(private val repository: HotelRepository) : ViewModel() {
         checkInDate = checkIn
         checkOutDate = checkOut
         
+        refreshSearch(onResponse)
+    }
+
+    fun refreshSearch(onResponse: () -> Unit = {}) {
         viewModelScope.launch {
             isLoading = true
             error = null
-            val result = repository.searchHotels(location, checkIn, checkOut)
+            val result = repository.searchHotels(searchLocation, checkInDate, checkOutDate)
             isLoading = false
             result.onSuccess {
                 hotels = it
@@ -41,7 +45,7 @@ class HotelViewModel(private val repository: HotelRepository) : ViewModel() {
             }.onFailure {
                 error = it.message ?: "Eroare necunoscută la căutare"
             }
-            onResponse() // Navigate regardless of success or failure
+            onResponse()
         }
     }
 
@@ -71,5 +75,9 @@ class HotelViewModel(private val repository: HotelRepository) : ViewModel() {
                 error = it.message
             }
         }
+    }
+
+    fun clearRooms() {
+        rooms = emptyList()
     }
 }
