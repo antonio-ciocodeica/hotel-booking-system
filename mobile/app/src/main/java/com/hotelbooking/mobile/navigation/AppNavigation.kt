@@ -84,6 +84,7 @@ fun AppNavigation() {
             viewModel = hotelViewModel,
             onRoomClick = { roomId ->
                 if (ServiceLocator.authRepository.isLoggedIn()) {
+                    bookingViewModel.resetBookingMessage()
                     currentScreen = Screen.Booking(roomId, screen.roomTypeId)
                 } else {
                     currentScreen = Screen.Login

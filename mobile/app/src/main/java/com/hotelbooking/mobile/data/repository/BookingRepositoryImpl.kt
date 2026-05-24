@@ -23,7 +23,7 @@ class BookingRepositoryImpl(
             if (response.isSuccessful) {
                 Result.success(response.body()?.available ?: false)
             } else {
-                Result.failure(Exception("Check availability failed"))
+                Result.failure(Exception("Check availability failed: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -46,7 +46,12 @@ class BookingRepositoryImpl(
                     body.price
                 ))
             } else {
-                Result.failure(Exception("Create booking failed"))
+                val errorMsg = when(response.code()) {
+                    409 -> "Camera este deja ocupată în această perioadă (Conflict de date)."
+                    403 -> "Sesiune expirată. Vă rugăm să vă autentificați din nou."
+                    else -> "Eroare la rezervare (Cod: ${response.code()})"
+                }
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -69,7 +74,7 @@ class BookingRepositoryImpl(
                 } ?: emptyList()
                 Result.success(list)
             } else {
-                Result.failure(Exception("Get bookings failed"))
+                Result.failure(Exception("Get bookings failed: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -82,7 +87,7 @@ class BookingRepositoryImpl(
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Cancel booking failed"))
+                Result.failure(Exception("Cancel failed: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

@@ -27,16 +27,9 @@ object RetrofitClient {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        val interceptor = try {
-            AuthInterceptor(getTokenManager())
-        } catch (e: Exception) {
-            // Fallback interceptor if TokenManager is not ready
-            AuthInterceptor(TokenManager(null))
-        }
-
         OkHttpClient.Builder()
             .addInterceptor(logging)
-            .addInterceptor(interceptor)
+            .addInterceptor(AuthInterceptor(getTokenManager()))
             .build()
     }
 
