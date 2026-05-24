@@ -129,6 +129,17 @@
             return ResponseEntity.ok("Account approved successfully.");
         }
 
+        @DeleteMapping(path = "/staff/{id}/reject")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<?> rejectStaffAccount(@PathVariable UUID id) {
+            StaffEntity staff = staffRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Staff not found"));
+            if (staff.getAccountStatus() != 0) {
+                throw new IllegalStateException("Only pending accounts can be rejected.");
+            }
+            staffRepository.delete(staff);
+            return ResponseEntity.ok("Account rejected and removed.");
+        }
+
         @GetMapping(path = "/staff")
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<List<StaffEntity>> getAllStaff() {
