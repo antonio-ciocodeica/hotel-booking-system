@@ -176,7 +176,15 @@ const Dashboard = () => {
                                 {pendingStaff.map(s => (
                                     <div key={s.id} style={styles.listItem}>
                                         <span>{s.email}</span>
-                                        <button onClick={async () => { await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/approve`, { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }); fetchPendingStaff(); }} style={styles.approveButton}>Approve</button>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button onClick={async () => { await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/approve`, { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }); fetchPendingStaff(); }} style={styles.approveButton}>Approve</button>
+                                            <button onClick={async () => {
+
+                                                await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/reject`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+                                                fetchPendingStaff();
+
+                                            }} style={styles.rejectButton}>Reject</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -301,6 +309,7 @@ const styles = {
     sectionTitle: { color: 'white', fontSize: '20px', marginBottom: '15px' },
     listItem: { display: 'flex', justifyContent: 'space-between', padding: '12px 20px', backgroundColor: 'rgba(255,255,255,0.05)', marginBottom: '8px', borderRadius: '6px', color: 'white', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' },
     approveButton: { backgroundColor: '#4CAF50', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+    rejectButton: { backgroundColor: '#f44336', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
     hotelForm: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' },
     input: { padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(0,0,0,0.4)', color: 'white', width: '100%', boxSizing: 'border-box' },
     dropdownSelect: { padding: '12px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.2)', backgroundColor: '#1a2a3a', color: 'white', cursor: 'pointer', width: '100%' },
