@@ -7,8 +7,8 @@ data class RoomType(
     val hotelId: UUID,
     val roomName: String,
     val roomFacilities: String?,
-    val childCapacity: Int?,
-    val adultCapacity: Int?,
+    val childCapacity: Int,
+    val adultCapacity: Int,
     val basePrice: Double,
-    val imageUrls: List<String> = emptyList()
+    val imageUrls: List<String>
 )

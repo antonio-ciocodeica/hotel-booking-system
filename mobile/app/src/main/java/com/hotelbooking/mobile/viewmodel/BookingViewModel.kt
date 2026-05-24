@@ -17,6 +17,10 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     var isLoading by mutableStateOf(false)
     var bookingMessage by mutableStateOf("")
 
+    fun resetBookingMessage() {
+        bookingMessage = ""
+    }
+
     fun loadMyBookings() {
         viewModelScope.launch {
             isLoading = true

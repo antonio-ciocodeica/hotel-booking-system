@@ -25,20 +25,25 @@ interface HotelApi {
 
     @GET("room-types/{id}/rooms")
     suspend fun getRoomsByRoomType(
-        @Path("id") roomTypeId: UUID,
-        @Query("checkIn") checkIn: String,
-        @Query("checkOut") checkOut: String
+        @Path("id") roomTypeId: UUID
     ): Response<List<RoomResponse>>
+
+    @GET("room-types/{roomTypeId}")
+    suspend fun getRoomTypeById(
+        @Path("roomTypeId") roomTypeId: UUID
+    ): Response<RoomTypeResponse>
 }
 
 data class RoomTypeResponse(
     @SerializedName("roomTypeId")
     val id: UUID,
+    val hotelId: UUID,
     val roomName: String,
     val roomFacilities: String?,
     val childCapacity: Int?,
     val adultCapacity: Int?,
     val basePrice: Double,
+    @SerializedName("availableRooms")
     val availableCount: Long,
     val availableRoomIds: List<UUID>?,
     val imageUrls: List<String>? = null

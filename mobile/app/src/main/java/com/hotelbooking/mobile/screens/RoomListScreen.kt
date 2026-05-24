@@ -51,13 +51,13 @@ fun RoomListScreen(
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
                     CircularProgressIndicator()
                 }
-            } else if (viewModel.rooms.none { it.status == 0 }) {
+            } else if (viewModel.rooms.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
                     Text("Nu sunt camere disponibile pentru acest tip.")
                 }
             } else {
                 LazyColumn {
-                    items(viewModel.rooms.filter { it.status == 0 }) { room ->
+                    items(viewModel.rooms) { room ->
                         RoomItem(
                             room = room,
                             roomTypeName = roomType?.roomName ?: "Cameră",

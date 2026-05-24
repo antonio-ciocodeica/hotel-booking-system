@@ -46,7 +46,6 @@ class HotelRepositoryImpl(
             if (response.isSuccessful) {
                 val body = response.body() ?: emptyList()
                 
-                // Salvăm ID-urile camerelor disponibile pentru a le folosi ulterior în getRoomsByRoomType
                 body.forEach { rt ->
                     availableRoomsCache[rt.id] = rt.availableRoomIds ?: emptyList()
                 }
@@ -57,8 +56,8 @@ class HotelRepositoryImpl(
                         hotelId,
                         rt.roomName,
                         rt.roomFacilities,
-                        rt.childCapacity,
-                        rt.adultCapacity,
+                        rt.childCapacity ?: 0,
+                        rt.adultCapacity ?: 0,
                         rt.basePrice,
                         rt.imageUrls?.map { "http://10.0.2.2:8080$it" } ?: emptyList()
                     )
@@ -75,23 +74,21 @@ class HotelRepositoryImpl(
     override suspend fun getRoomsByRoomType(roomTypeId: UUID, checkIn: LocalDate, checkOut: LocalDate): Result<List<Room>> {
         return try {
             val response = hotelApi.getRoomsByRoomType(
-                roomTypeId,
-                checkIn.format(formatter),
-                checkOut.format(formatter)
+                roomTypeId
             )
             if (response.isSuccessful) {
-                // Nu mai folosim statusul "mocked", ci verificăm în lista de ID-uri disponibile primită anterior de la backend
                 val availableIds = availableRoomsCache[roomTypeId] ?: emptyList()
                 
                 val rooms = response.body()?.map {
                     val roomId = it.id ?: UUID.randomUUID()
-                    val isAvailable = availableIds.contains(roomId)
+                    // IMPORTANT: A room is available ONLY if its ID is in the dynamic availability list from the server
+                    val isActuallyAvailable = availableIds.contains(roomId)
                     
                     Room(
-                        roomId,
-                        it.roomTypeId ?: roomTypeId,
-                        it.roomNumber ?: 0,
-                        if (isAvailable) 0 else 1 // 0 = disponibil, 1 = ocupat
+                        id = roomId,
+                        roomTypeId = it.roomTypeId ?: roomTypeId,
+                        roomNumber = it.roomNumber ?: 0,
+                        status = if (isActuallyAvailable) 0 else 1 
                     )
                 } ?: emptyList()
                 Result.success(rooms)

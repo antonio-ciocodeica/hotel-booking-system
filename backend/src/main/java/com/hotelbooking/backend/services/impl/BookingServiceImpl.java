@@ -106,7 +106,15 @@ public class BookingServiceImpl implements BookingService {
         booking.setUser(user);
         booking.setCheckIn(request.getCheckIn());
         booking.setCheckOut(request.getCheckOut());
-        booking.setPrice(BigDecimal.valueOf(100));
+
+        // Calculate dynamic price based on number of nights and room base price
+        long nights = java.time.temporal.ChronoUnit.DAYS.between(request.getCheckIn(), request.getCheckOut());
+        if (nights <= 0) nights = 1; // Minimum 1 night charge
+        
+        BigDecimal basePrice = room.getRoomType().getBasePrice();
+        BigDecimal totalPrice = basePrice.multiply(BigDecimal.valueOf(nights));
+        
+        booking.setPrice(totalPrice);
         booking.setStatus(0);
         booking.setReservationDate(LocalDate.now());
 
