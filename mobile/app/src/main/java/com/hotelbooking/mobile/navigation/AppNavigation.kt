@@ -34,12 +34,18 @@ fun AppNavigation() {
     when (val screen = currentScreen) {
         is Screen.Login -> LoginScreen(
             viewModel = loginViewModel,
-            onNavigateToRegister = { currentScreen = Screen.Register },
+            onNavigateToRegister = { 
+                registerViewModel.resetState()
+                currentScreen = Screen.Register 
+            },
             onLoginSuccess = { currentScreen = Screen.Search }
         )
         is Screen.Register -> RegisterScreen(
             viewModel = registerViewModel,
-            onNavigateToLogin = { currentScreen = Screen.Login }
+            onNavigateToLogin = { 
+                loginViewModel.resetState()
+                currentScreen = Screen.Login 
+            }
         )
         is Screen.Search -> SearchScreen(
             onSearch = { location, checkIn, checkOut ->
@@ -50,6 +56,7 @@ fun AppNavigation() {
             onNavigateToMyBookings = { currentScreen = Screen.MyBookings },
             onLogout = {
                 ServiceLocator.authRepository.logout()
+                loginViewModel.resetState()
                 currentScreen = Screen.Login
             },
             isLoggedIn = ServiceLocator.authRepository.isLoggedIn()
@@ -59,6 +66,7 @@ fun AppNavigation() {
             onHotelClick = { hotelId -> currentScreen = Screen.RoomTypeList(hotelId) },
             onLogout = {
                 ServiceLocator.authRepository.logout()
+                loginViewModel.resetState()
                 currentScreen = Screen.Login
             },
             onNavigateToMyBookings = { currentScreen = Screen.MyBookings },
@@ -87,6 +95,7 @@ fun AppNavigation() {
                     bookingViewModel.resetBookingMessage()
                     currentScreen = Screen.Booking(roomId, screen.roomTypeId)
                 } else {
+                    loginViewModel.resetState()
                     currentScreen = Screen.Login
                 }
             },

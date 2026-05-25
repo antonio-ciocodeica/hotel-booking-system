@@ -16,6 +16,12 @@ class LoginViewModel(private val repository: AuthRepository) : ViewModel() {
     var message by mutableStateOf("")
     var isLoading by mutableStateOf(false)
 
+    fun resetState() {
+        email = ""
+        password = ""
+        message = ""
+    }
+
     fun login(onSuccess: () -> Unit) {
         if (email.isBlank() || password.isBlank()) {
             message = "Vă rugăm să completați toate câmpurile"

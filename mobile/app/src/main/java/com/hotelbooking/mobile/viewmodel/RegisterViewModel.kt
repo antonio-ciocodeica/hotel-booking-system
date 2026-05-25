@@ -19,6 +19,15 @@ class RegisterViewModel(private val repository: AuthRepository) : ViewModel() {
     var message by mutableStateOf("")
     var isLoading by mutableStateOf(false)
 
+    fun resetState() {
+        firstName = ""
+        lastName = ""
+        email = ""
+        password = ""
+        phoneNumber = ""
+        message = ""
+    }
+
     fun register(onSuccess: () -> Unit) {
         if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
             message = "Vă rugăm să completați toate câmpurile obligatorii"
