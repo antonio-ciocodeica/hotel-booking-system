@@ -4,12 +4,13 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
     const navigate = useNavigate();
     const userRole = localStorage.getItem('role');
-    const isAdmin = userRole === '2';
+    const isAdmin = userRole === '2'; // Admin are rol '2', Staff are alt rol (ex: '1')
 
     const [pendingStaff, setPendingStaff] = useState([]);
     const [allStaff, setAllStaff] = useState([]);
     const [allHotels, setAllHotels] = useState([]);
     const [allRoomTypes, setAllRoomTypes] = useState([]);
+    const [hotelBookings, setHotelBookings] = useState([]); // Rezervările clienților
     const [showHotelForm, setShowHotelForm] = useState(false);
     const [myHotelId, setMyHotelId] = useState(localStorage.getItem('hotelId') || null);
 
@@ -18,30 +19,30 @@ const Dashboard = () => {
     const [newRoom, setNewRoom] = useState({ roomTypeId: '', roomNumber: '' });
     const [roomTypeImages, setRoomTypeImages] = useState(null);
 
+    // --- 1. Primul useEffect: Inițializarea datelor ---
     useEffect(() => {
         fetchAllHotels();
         fetchAllRoomTypes();
+
         if (isAdmin) {
             fetchAllStaff();
             fetchPendingStaff();
+        } else {
+            // Staff-ul simplu își citește hotelId-ul salvat în localStorage la login
+            const savedHotelId = localStorage.getItem('hotelId');
+            if (savedHotelId) {
+                setMyHotelId(savedHotelId);
+                fetchBookingsForHotel(savedHotelId);
+            }
         }
     }, [isAdmin]);
 
+    // --- 2. Al doilea useEffect: Re-trage datele dacă hotelul Staff-ului se schimbă ---
     useEffect(() => {
-        if (!isAdmin) {
-            const email = localStorage.getItem('userEmail');
-            if (email && allStaff.length > 0) {
-                const me = allStaff.find(s => s.email?.toLowerCase() === email?.toLowerCase());
-                if (me) {
-                    if (me.hotel && me.hotel.id) {
-                        setMyHotelId(me.hotel.id);
-                    } else if (me.hotelId) {
-                        setMyHotelId(me.hotelId);
-                    }
-                }
-            }
+        if (!isAdmin && myHotelId) {
+            fetchBookingsForHotel(myHotelId);
         }
-    }, [allStaff, isAdmin]);
+    }, [myHotelId, isAdmin]);
 
     const fetchAllHotels = async () => {
         const res = await fetch('http://127.0.0.1:8080/hotels', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
@@ -62,6 +63,87 @@ const Dashboard = () => {
         const res = await fetch('http://127.0.0.1:8080/room-types', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
         if (res.ok) setAllRoomTypes(await res.json());
     };
+
+    // Funcția pentru a apela noul endpoint din Spring Boot pentru Staff
+    const fetchBookingsForHotel = async (hotelId) => {
+        if (!hotelId) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/bookings/hotel/${hotelId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            if (res.ok) {
+                setHotelBookings(await res.json());
+            } else {
+                console.error("Eroare backend la încărcarea rezervărilor. Status:", res.status);
+            }
+        } catch (err) {
+            console.error("Eroare de rețea la fetch bookings:", err);
+        }
+    };
+
+    // --- MANAGE BOOKINGS ACTIONS ---
+    const handleCheckInBooking = async (bookingId) => {
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/bookings/${bookingId}/check-in`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (res.ok) {
+                alert('Check-in processed successfully!');
+                fetchBookingsForHotel(myHotelId);
+            } else {
+                const err = await res.text();
+                alert('Failed to check-in: ' + err);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error during check-in.');
+        }
+    };
+
+    const handleCheckOutBooking = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to check-out this guest?")) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/bookings/${bookingId}/check-out`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (res.ok) {
+                alert('Check-out completed successfully!');
+                fetchBookingsForHotel(myHotelId);
+            } else {
+                const err = await res.text();
+                alert('Failed to check-out: ' + err);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error during check-out.');
+        }
+    };
+
+    const handleCancelBooking = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to cancel this booking?")) return;
+        try {
+            const res = await fetch(`http://127.0.0.1:8080/bookings/${bookingId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+
+            if (res.ok) {
+                alert('Booking canceled!');
+                fetchBookingsForHotel(myHotelId);
+            } else {
+                const err = await res.text();
+                alert('Failed to cancel: ' + err);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Network error during cancellation.');
+        }
+    };
+    // ---------------------------------
 
     const handleAssignHotel = async (staffId, hotelId) => {
         if (!hotelId) return;
@@ -172,17 +254,15 @@ const Dashboard = () => {
                     {isAdmin && (
                         <>
                             <div style={styles.adminSection}>
-                                <h2 style={styles.sectionTitle}>Pending Approvals ({pendingStaff.length})</h2>
+                                <h2 style={styles.sectionTitle}>Pending Staff Approvals ({pendingStaff.length})</h2>
                                 {pendingStaff.map(s => (
                                     <div key={s.id} style={styles.listItem}>
                                         <span>{s.email}</span>
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <button onClick={async () => { await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/approve`, { method: 'PUT', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }); fetchPendingStaff(); }} style={styles.approveButton}>Approve</button>
                                             <button onClick={async () => {
-
                                                 await fetch(`http://127.0.0.1:8080/auth/staff/${s.id}/reject`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
                                                 fetchPendingStaff();
-
                                             }} style={styles.rejectButton}>Reject</button>
                                         </div>
                                     </div>
@@ -203,9 +283,53 @@ const Dashboard = () => {
                         </>
                     )}
 
+                    {/* Sectiunea rezervarilor este randata DOAR daca utilizatorul NU este admin */}
+                    {!isAdmin && (
+                        <div style={styles.adminSection}>
+                            <h2 style={styles.sectionTitle}>Guest Bookings & Check-In</h2>
+                            {hotelBookings.length === 0 ? (
+                                <span style={{ color: '#aaa', fontStyle: 'italic' }}>No bookings found for this hotel.</span>
+                            ) : (
+                                hotelBookings.map(b => (
+                                    <div key={b.id} style={styles.listItem}>
+                                        <div>
+                                            <strong style={{ color: '#66b2ff' }}>{b.customerEmail || b.user?.email || 'Guest'}</strong> <br />
+                                            <span style={{ fontSize: '13px', color: '#ccc' }}>
+                                                Period: {b.checkInDate || b.checkIn} to {b.checkOutDate || b.checkOut} |
+                                                Status: {
+                                                b.status === 0 ? <strong style={{color: '#ffa500'}}>Pending</strong> :
+                                                    b.status === 1 ? <strong style={{color: '#4CAF50'}}>Checked-In</strong> :
+                                                        b.status === 3 ? <strong style={{color: '#aaa'}}>Completed</strong> :
+                                                            b.status === 4 ? <strong style={{color: '#f44336'}}>Canceled</strong> :
+                                                                'Unknown'
+                                            }
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            {b.status === 0 && (
+                                                <>
+                                                    <button onClick={() => handleCheckInBooking(b.id)} style={styles.approveButton}>
+                                                        Accept & Check-In
+                                                    </button>
+                                                    <button onClick={() => handleCancelBooking(b.id)} style={styles.rejectButton}>
+                                                        Cancel
+                                                    </button>
+                                                </>
+                                            )}
+                                            {b.status === 1 && (
+                                                <button onClick={() => handleCheckOutBooking(b.id)} style={{...styles.approveButton, backgroundColor: '#ff9800'}}>
+                                                    Process Check-Out
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
+
                     <div style={styles.adminSection}>
                         <h2 style={styles.sectionTitle}>Room Management</h2>
-
                         <form onSubmit={handleCreateRoomType} style={styles.hotelForm}>
                             {isAdmin ? (
                                 <select onChange={e => setNewRoomType({ ...newRoomType, hotelId: e.target.value })} style={styles.dropdownSelect} value={newRoomType.hotelId}>

@@ -198,4 +198,15 @@ public class BookingServiceImpl implements BookingService {
 
          return bookingMapper.toDto(bookingRepository.save(booking));
      }
+
+    @Override
+    public List<BookingResponse> getBookingsByHotelId(UUID hotelId) {
+        if (hotelId == null) {
+            throw new IllegalArgumentException("Hotel ID nu poate fi null");
+        }
+
+        List<BookingEntity> bookings = bookingRepository.findByRoomRoomTypeHotelId(hotelId);
+
+        return bookingMapper.toDtoList(bookings);
+    }
 }

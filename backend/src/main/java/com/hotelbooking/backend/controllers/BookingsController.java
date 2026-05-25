@@ -68,4 +68,11 @@ public class BookingsController{
     public ResponseEntity<BookingResponse> checkOutRezervare(@PathVariable UUID id) {
         return ResponseEntity.ok(bookingService.performCheckOut(id));
     }
+
+    @GetMapping("/hotel/{hotelId}")
+    @PreAuthorize("hasRole('STAFF') or hasRole('ADMIN')")
+    public ResponseEntity<List<BookingResponse>> getBookingsByHotel(@PathVariable UUID hotelId) {
+        List<BookingResponse> bookings = bookingService.getBookingsByHotelId(hotelId);
+        return ResponseEntity.ok(bookings);
+    }
 }

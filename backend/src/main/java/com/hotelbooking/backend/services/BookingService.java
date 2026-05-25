@@ -24,4 +24,6 @@ public interface BookingService {
     BookingResponse performCheckIn(UUID code);
 
     BookingResponse performCheckOut(UUID code);
+
+    List<BookingResponse> getBookingsByHotelId(UUID hotelId);
 }
