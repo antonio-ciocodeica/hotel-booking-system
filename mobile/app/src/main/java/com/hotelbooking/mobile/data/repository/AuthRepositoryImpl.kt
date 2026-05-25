@@ -18,7 +18,7 @@ class AuthRepositoryImpl(
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
-                    tokenManager.saveToken(body.token)
+                    tokenManager.saveToken(body.token, body.expiresIn)
                     Result.success(body)
                 } else {
                     Result.failure(Exception("Empty body"))
