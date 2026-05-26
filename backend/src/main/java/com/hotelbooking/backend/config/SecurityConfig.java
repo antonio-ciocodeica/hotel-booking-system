@@ -98,6 +98,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/bookings/availability").permitAll()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-in").authenticated()
                         .requestMatchers(HttpMethod.POST, "/bookings/*/check-out").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/bookings/*").authenticated()
                         .requestMatchers(HttpMethod.GET, "/room-types").authenticated()
                         .requestMatchers(HttpMethod.GET, "/hotels").authenticated()
                         .requestMatchers(HttpMethod.POST, "/hotels").authenticated()
