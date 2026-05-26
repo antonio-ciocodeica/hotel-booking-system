@@ -123,13 +123,20 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse cancelBooking(UUID bookingId) {
-        UserEntity user = authenticationService.getUserEntityFromAuth();
-
         BookingEntity booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking does not exist"));
 
-        if (booking.getUser() == null || !booking.getUser().getId().equals(user.getId())) {
-            throw new SecurityException("You are not authorized to perform this action");
+        org.springframework.security.core.Authentication auth =
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isStaffOrAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().contains("STAFF") || a.getAuthority().contains("ADMIN"));
+
+        if (!isStaffOrAdmin) {
+            UserEntity user = authenticationService.getUserEntityFromAuth();
+            if (booking.getUser() == null || !booking.getUser().getId().equals(user.getId())) {
+                throw new SecurityException("You are not authorized to perform this action");
+            }
         }
 
         if (booking.getStatus() == 4) {

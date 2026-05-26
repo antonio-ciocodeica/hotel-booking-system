@@ -126,17 +126,24 @@ const Dashboard = () => {
     const handleCancelBooking = async (bookingId) => {
         if (!window.confirm("Are you sure you want to cancel this booking?")) return;
         try {
+            // We use DELETE and just the ID, exactly as your @DeleteMapping("/{id}") specifies
             const res = await fetch(`http://127.0.0.1:8080/bookings/${bookingId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
 
             if (res.ok) {
-                alert('Booking canceled!');
-                fetchBookingsForHotel(myHotelId);
+                alert('Booking canceled successfully!');
+                fetchBookingsForHotel(myHotelId); // Refresh the list
             } else {
-                const err = await res.text();
-                alert('Failed to cancel: ' + err);
+                // Sometime Spring returns JSON errors, sometimes text. Let's handle both.
+                try {
+                    const errJson = await res.json();
+                    alert('Failed to cancel: ' + (errJson.message || 'Error'));
+                } catch {
+                    const errText = await res.text();
+                    alert('Failed to cancel: ' + errText);
+                }
             }
         } catch (error) {
             console.error(error);
